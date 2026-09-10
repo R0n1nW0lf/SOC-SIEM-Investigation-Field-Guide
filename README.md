@@ -42,3 +42,11 @@ This repository is part of my cybersecurity portfolio and demonstrates how I org
 ## Disclaimer
 
 All examples and techniques documented here are based on authorized cybersecurity training, lab environments, and defensive security analysis.
+
+## Ongoing Development
+
+This field guide is a living document.
+
+I will continue adding new investigation techniques, attack patterns, indicators, search methods, and lessons learned as I progress through additional SOC labs and hands-on cybersecurity investigations.
+
+The goal is to continuously improve this guide based on practical experience rather than treat it as a finished reference.
