@@ -28,6 +28,7 @@ The guide is designed as a quick-reference resource for SOC investigations and w
 - SIEM/EDR-first investigation methodology
 - Dynamic malware analysis
 - Windows Registry hive shorthand and persistence paths
+- TCP flags and connection-state interpretation
 
 ## Investigation Philosophy
 
@@ -104,6 +105,35 @@ When reading a TCP connection such as:
 `50145` is the temporary client/source port and `587` is the destination/service port.
 
 A TCP `[SYN]` indicates the beginning of a connection attempt. Use **Follow TCP Stream** when necessary to inspect the complete conversation. Port `587` commonly represents SMTP message submission.
+
+### TCP Flag Quick Reference
+
+The normal TCP three-way handshake is:
+
+`SYN → SYN/ACK → ACK`
+
+This establishes the connection before application data is exchanged.
+
+| Flag | Meaning | Analyst Interpretation |
+| --- | --- | --- |
+| `SYN` | Synchronize | Begins a TCP connection attempt |
+| `SYN, ACK` | Synchronize + acknowledge | Server acknowledges the connection request and responds |
+| `ACK` | Acknowledge | Confirms received TCP data or completes the handshake |
+| `PSH` | Push | Requests that received data be delivered to the application promptly |
+| `PSH, ACK` | Push + acknowledge | Common during active application-data exchange |
+| `FIN` | Finish | Gracefully begins closing a TCP connection |
+| `FIN, ACK` | Finish + acknowledge | Common during normal connection teardown |
+| `RST` | Reset | Abruptly terminates or rejects a TCP connection |
+
+A simplified normal conversation may look like:
+
+`SYN → SYN/ACK → ACK → PSH/ACK → PSH/ACK → FIN/ACK`
+
+Think of the sequence as:
+
+`Connect → Established → Exchange Data → Close`
+
+`FIN` and `PSH` are not inherently suspicious. Interpret TCP flags in context with the source and destination hosts, ports, process, protocol, timestamps, and application behavior.
 
 ### Regshot — Registry Comparison
 
