@@ -63,6 +63,7 @@ Dynamic malware analysis involves executing a suspicious file inside an isolated
 | Wireshark | DNS, TCP/UDP, IP addresses, ports, and packet analysis |
 | Fiddler | HTTP/HTTPS application traffic inspection |
 | HashMyFiles | Generate and compare file hashes |
+| ANY.RUN | Historical or live sandbox evidence, process/network correlation, and application-layer traffic when behavior cannot be reproduced locally |
 
 ### Procmon — Detecting Dropped Files
 
@@ -85,6 +86,27 @@ Useful filters and operations include:
 
 Procmon can show file activity, but it does not calculate the file's cryptographic hash. Use a hashing tool when the investigation requires MD5, SHA-1, or SHA-256.
 
+### Procmon — Include the Malware Parent and Children
+
+Filtering only by the original malware process can cause important evidence to be missed. Malware may launch or abuse another process, including legitimate Windows binaries such as `RegSvcs.exe`. A child process may perform network communication, file activity, Registry modification, or other malicious behavior instead of the original executable.
+
+In Procmon:
+
+**Tools → Process Tree → locate the malware parent process → right-click → Add process and children to Include filter**
+
+Then review the filtered events for activity such as:
+
+- `Process Create`
+- `TCP Connect`
+- `TCP Send`
+- `TCP Receive`
+- `CreateFile`
+- `WriteFile`
+- `RegSetValue`
+- `RegCreateKey`
+
+This filter does **not guarantee** that Procmon will reveal the final answer. It is a strong clue that narrows the investigation to processes and events more likely to be related to the sample. Always correlate the results with other evidence sources.
+
 ### Wireshark — Malware Network Activity
 
 Start by identifying unusual DNS queries and correlate them with subsequent network connections.
@@ -100,6 +122,36 @@ When reading a TCP connection such as:
 `50145` is the temporary client/source port and `587` is the destination/service port.
 
 A TCP `[SYN]` indicates the beginning of a connection attempt. Use **Follow TCP Stream** when necessary to inspect the complete conversation. Port `587` commonly represents SMTP message submission.
+
+### When Wireshark Does Not Show the Evidence You Need
+
+Wireshark is extremely useful for packet-level investigation, but it will not always provide every piece of evidence needed to answer an investigation question.
+
+A connection may be short-lived, encrypted, use a non-standard port, rely on cached DNS information, or the remote infrastructure may no longer be active. A capture can also contain large amounts of unrelated background traffic that make the relevant activity difficult to identify.
+
+For example, malware may previously have exfiltrated data through an SMTP server. If that mail server is no longer online, executing the malware today may never reproduce the original SMTP traffic. Wireshark cannot capture traffic that never occurs.
+
+When required behavior cannot be reproduced, use another evidence source rather than guessing. Alternative sources may include:
+
+- ANY.RUN or another authorized malware sandbox
+- EDR or network telemetry
+- Historical PCAP files
+- Procmon
+- Process Hacker or similar process inspection tools
+- SIEM logs
+- Previously recorded sandbox reports
+
+The goal is not to force one tool to answer every question. The goal is to **correlate evidence across tools**.
+
+A useful investigation pattern is:
+
+`Known event → Timestamp → Victim IP → Protocol → Destination → Follow Stream → Correlate with process evidence`
+
+A matching packet by itself is not proof that something is malicious. For example:
+
+`SYN → retransmission → retransmission`
+
+with no `SYN/ACK` means the connection was attempted but was not established. Do not mistake a failed connection attempt for successful communication or exfiltration.
 
 ### Wireshark Investigation Filter Cheat Sheet
 
@@ -117,6 +169,7 @@ This shows **DNS queries only**, making it much easier to identify domains reque
 | --- | --- |
 | All DNS traffic | `dns` |
 | DNS queries only | `dns.flags.response == 0` |
+| DNS A-record traffic | `dns.qry.type == 1` |
 | HTTP traffic | `http` |
 | HTTP requests only | `http.request` |
 | TLS traffic | `tls` |
@@ -142,6 +195,12 @@ Filters can be combined with `&&` for **AND**, `||` for **OR**, and `!` for **NO
 
 `ip.src == <IP> && dns`
 
+`ip.src == <VICTIM_IP> && tcp`
+
+`frame.time_relative >= <START> && frame.time_relative <= <END>`
+
+`tcp.port == 25 || tcp.port == 465 || tcp.port == 587`
+
 `tcp.dstport == 587 || smtp`
 
 **Analyst workflow:**
@@ -149,6 +208,18 @@ Filters can be combined with `&&` for **AND**, `||` for **OR**, and `!` for **NO
 `Broad capture → Filter protocol → Identify suspicious host/domain/IP → Narrow by IP/port → Follow Stream → Correlate with process evidence`
 
 A useful filter reduces the haystack; it does not determine whether the remaining traffic is malicious. Always correlate network findings with process, file, Registry, endpoint, and timeline evidence.
+
+### Know When to Pivot
+
+If expected evidence is absent, do not immediately assume the activity never happened.
+
+First determine whether the connection failed, the capture missed it, another process performed it, the traffic is encrypted or not decoded as expected, or the original infrastructure is no longer available. Then pivot to another evidence source.
+
+In one authorized malware-analysis exercise, the current Wireshark capture showed the malware contacting its public-IP lookup service, but the historical SMTP exfiltration could no longer be reproduced. The investigation therefore moved to a historical ANY.RUN analysis, where the process, remote connection, SMTP traffic, and authentication sequence could be correlated.
+
+**Analyst mindset:**
+
+> **Use each tool for the evidence it can provide. If one source reaches a dead end, pivot to another source and correlate the results. Never fill missing evidence with assumptions.**
 
 ### TCP Flag Quick Reference
 
