@@ -26,6 +26,7 @@ The guide is designed as a quick-reference resource for SOC investigations and w
 - Tier 2 escalation and containment decisions
 - Analyst note documentation
 - SIEM/EDR-first investigation methodology
+- Windows Registry hive shorthand and persistence paths
 
 ## Investigation Philosophy
 
@@ -34,6 +35,40 @@ Start with the evidence already available in the SIEM and EDR.
 **SIEM / EDR → Correlate Evidence → Deeper Analysis → Sandbox if Needed**
 
 Sandboxing, packet analysis, and static malware analysis are useful when existing telemetry is insufficient, but they should not replace evidence already available in the SIEM.
+
+## Windows Registry Hive Shorthand
+
+Different Windows tools may display the same Registry hive using different names. When reviewing Regshot, Procmon, Registry Editor, SIEM, or EDR evidence, translate the shorthand before comparing paths or answering a lab question.
+
+| Shorthand | Full Registry Hive |
+| --- | --- |
+| `HKU` | `HKEY_USERS` |
+| `HKCU` | `HKEY_CURRENT_USER` |
+| `HKLM` | `HKEY_LOCAL_MACHINE` |
+| `HKCR` | `HKEY_CLASSES_ROOT` |
+| `HKCC` | `HKEY_CURRENT_CONFIG` |
+
+### Important HKU / HKCU Relationship
+
+A tool such as Regshot may show a logged-in user's key as:
+
+`HKU\<USER-SID>\Software\Microsoft\Windows\CurrentVersion\Run`
+
+For that logged-in user, the equivalent friendly path is:
+
+`HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run`
+
+`HKU` itself means `HKEY_USERS`. Do not blindly replace every `HKU` path with `HKEY_CURRENT_USER`; the equivalence applies when the `HKU\<SID>` hive is the currently logged-in user's hive.
+
+### Common Persistence Example
+
+`HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run`
+
+Programs referenced by values under this key can be launched when that user logs on. During malware analysis, correlate the Registry value data with the dropped executable path before concluding that it is the malware's persistence mechanism.
+
+**Example investigation chain:**
+
+`Dropped executable → Registry Run value → executable path matches → persistence established`
 
 ## Purpose
 
