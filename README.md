@@ -29,6 +29,7 @@ The guide is designed as a quick-reference resource for SOC investigations and w
 - Dynamic malware analysis
 - Windows Registry hive shorthand and persistence paths
 - TCP flags and connection-state interpretation
+- Wireshark investigation filters
 
 ## Investigation Philosophy
 
@@ -92,12 +93,6 @@ Start by identifying unusual DNS queries and correlate them with subsequent netw
 
 `DNS query → Domain → Resolved IP → TCP connection → Destination port → Application traffic`
 
-Useful display filters include:
-
-- `dns`
-- `http`
-- `ip.addr == <suspicious-IP>`
-
 When reading a TCP connection such as:
 
 `50145 → 587`
@@ -105,6 +100,55 @@ When reading a TCP connection such as:
 `50145` is the temporary client/source port and `587` is the destination/service port.
 
 A TCP `[SYN]` indicates the beginning of a connection attempt. Use **Follow TCP Stream** when necessary to inspect the complete conversation. Port `587` commonly represents SMTP message submission.
+
+### Wireshark Investigation Filter Cheat Sheet
+
+Large packet captures contain significant background traffic. Start broad, then narrow the capture with display filters instead of manually reading every packet.
+
+For domain hunting, `dns` shows DNS queries and responses. When responses create too much noise, use:
+
+`dns.flags.response == 0`
+
+This shows **DNS queries only**, making it much easier to identify domains requested by the host. Review unusual domains in context rather than assuming the first unfamiliar domain is malicious.
+
+**Useful Wireshark display filters:**
+
+| Investigation Goal | Display Filter |
+| --- | --- |
+| All DNS traffic | `dns` |
+| DNS queries only | `dns.flags.response == 0` |
+| HTTP traffic | `http` |
+| HTTP requests only | `http.request` |
+| TLS traffic | `tls` |
+| SMTP traffic | `smtp` |
+| TCP traffic | `tcp` |
+| UDP traffic | `udp` |
+| Traffic involving an IP | `ip.addr == <IP>` |
+| Traffic sent from an IP | `ip.src == <IP>` |
+| Traffic sent to an IP | `ip.dst == <IP>` |
+| Traffic involving a TCP port | `tcp.port == <PORT>` |
+| Traffic sent to a TCP port | `tcp.dstport == <PORT>` |
+| SYN packets | `tcp.flags.syn == 1` |
+| Initial SYN without ACK | `tcp.flags.syn == 1 && tcp.flags.ack == 0` |
+| Reset packets | `tcp.flags.reset == 1` |
+| FIN packets | `tcp.flags.fin == 1` |
+| TCP retransmissions | `tcp.analysis.retransmission` |
+| ARP traffic | `arp` |
+| ICMP traffic | `icmp` |
+
+Filters can be combined with `&&` for **AND**, `||` for **OR**, and `!` for **NOT**. Examples:
+
+`ip.addr == <IP> && tcp`
+
+`ip.src == <IP> && dns`
+
+`tcp.dstport == 587 || smtp`
+
+**Analyst workflow:**
+
+`Broad capture → Filter protocol → Identify suspicious host/domain/IP → Narrow by IP/port → Follow Stream → Correlate with process evidence`
+
+A useful filter reduces the haystack; it does not determine whether the remaining traffic is malicious. Always correlate network findings with process, file, Registry, endpoint, and timeline evidence.
 
 ### TCP Flag Quick Reference
 
