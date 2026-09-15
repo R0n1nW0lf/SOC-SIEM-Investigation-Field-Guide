@@ -6,6 +6,44 @@ Use this page when you already know **what you want to find** and need the faste
 
 ---
 
+## Recommended Starting Point — Sandbox First, Then Static Analysis
+
+When policy and the analysis environment allow it, start by checking the suspicious file or its hash in a malware-analysis sandbox such as **Hybrid Analysis**, **ANY.RUN**, or another trusted sandbox service.
+
+If the file is sensitive, confidential, or belongs to a client/employer, **do not upload it to a public sandbox unless policy explicitly permits it**. Prefer searching the file hash first or use an approved private/internal sandbox.
+
+Use the sandbox to get a firsthand behavioral overview:
+
+- Process tree and parent/child relationships
+- Full command lines and encoded command arguments
+- DNS requests and contacted domains/IPs
+- HTTP/HTTPS or other network activity
+- Files created, downloaded, or dropped
+- Registry changes or persistence behavior when available
+- Suspicious child processes such as Office applications spawning PowerShell, cmd, wscript, or cscript
+
+Then use **oletools and other static-analysis tools** to investigate the document itself and explain **why** that behavior occurred.
+
+```text
+File / Hash
+    ↓
+Sandbox behavioral overview
+    ↓
+Identify processes + commands + DNS + network + dropped files
+    ↓
+oleid / olemeta / olevba / strings / grep
+    ↓
+Trace behavior back into document code
+    ↓
+Correlate sandbox evidence with static evidence
+    ↓
+Verify → Conclusion
+```
+
+A sandbox result is evidence, not an automatic verdict. If sandbox and static results disagree, investigate the difference instead of choosing whichever result looks more suspicious.
+
+---
+
 ## Before Using `oleid`, `olemeta`, or `olevba`
 
 These commands are part of the **oletools** package. If they are not already installed on the Linux analysis machine, install oletools first.
@@ -45,6 +83,7 @@ If `pipx` installation succeeds but the commands are not found immediately after
 
 | Stage / Tool | What it answers | Example |
 | --- | --- | --- |
+| **Sandbox — Behavioral overview** | What processes, commands, DNS/network activity, and dropped files appeared during execution? | Hybrid Analysis / ANY.RUN / approved sandbox |
 | **`olemeta` — Metadata** | Who created/saved it? When? What application/template? | `olemeta filename` |
 | **`oleid` — Triage / Detection** | Does it contain VBA/XLM macros, encryption, or suspicious Office features? | `oleid filename` |
 | **`olevba` — VBA Investigation** | What does the macro contain? AutoExec? URLs? IOCs? commands? obfuscation? | `olevba filename` |
@@ -54,11 +93,12 @@ If `pipx` installation succeeds but the commands are not found immediately after
 ### Simple memory rule
 
 ```text
-WHO / WHEN?                 → olemeta
-DOES IT HAVE A MACRO?       → oleid
-WHAT DOES THE MACRO DO?     → olevba
-FIND ONE THING IN THE VBA?  → grep
-QUICK RAW FILE SEARCH?      → strings + grep
+WHAT DID IT DO?              → sandbox / dynamic evidence
+WHO / WHEN?                  → olemeta
+DOES IT HAVE A MACRO?        → oleid
+WHAT DOES THE MACRO DO?      → olevba
+FIND ONE THING IN THE VBA?   → grep
+QUICK RAW FILE SEARCH?       → strings + grep
 ```
 
 ---
@@ -67,6 +107,10 @@ QUICK RAW FILE SEARCH?      → strings + grep
 
 | Goal | Stage / Start With | Example |
 | --- | --- | --- |
+| What happened when the document executed? | **Sandbox — behavioral overview** | Review process tree, command lines, network, dropped files |
+| Which process made a connection? | **Sandbox — process/network correlation** | Match process tree/command line to network behavior |
+| What DNS requests were actually sent? | **Sandbox / Wireshark — network evidence** | Review DNS activity; in Wireshark use `dns` or `dns.flags.response == 0` |
+| What filename was downloaded or dropped? | **Sandbox + static correlation** | Check dropped/downloaded files, then trace filename into VBA/command line |
 | Is this really the file type the extension claims? | **File verification — `file`** | `file filename` |
 | What is the MD5? | **Hash — `md5sum`** | `md5sum filename` |
 | What is the SHA256? | **Hash — `sha256sum`** | `sha256sum filename` |
@@ -124,7 +168,7 @@ Broader network-related hunt:
 grep -Ei 'http|https|ftp|DownloadFile|WebClient|User-Agent' filename.vba
 ```
 
-If nothing appears plainly, do **not** conclude there is no URL. It may be fragmented or obfuscated. Move to deobfuscation, variable tracing, XORSearch, or ViperMonkey.
+If nothing appears plainly, do **not** conclude there is no URL. It may be fragmented or obfuscated. Move to deobfuscation, variable tracing, XORSearch, ViperMonkey, or sandbox/network evidence.
 
 ---
 
@@ -137,6 +181,8 @@ grep -Ei 'powershell|cmd(\.exe)?|cscript|wscript|Shell|objShell\.Run|CreateObjec
 ```
 
 Then inspect the surrounding code and determine **what exact command or object is being executed**.
+
+If static searching only produces a generic suspicious-keyword result and does not reveal the actual command, pivot to the sandbox **process tree / command line** and correlate the command back to the document.
 
 ---
 
@@ -154,7 +200,7 @@ For staging locations:
 grep -Ei 'temp|appdata|%temp%|%tmp%' filename.vba
 ```
 
-Trace the filename/path into operations such as `Open`, `Write`, `Shell`, `.Run`, or `DownloadFile`.
+Trace the filename/path into operations such as `Open`, `Write`, `Shell`, `.Run`, or `DownloadFile`. If the filename is clearer in the sandbox report, use that artifact as a lead and trace it back into the static code.
 
 ---
 
@@ -219,18 +265,21 @@ olevba --deobf --reveal filename.vba > filename_deobf.vba
 ## Fast Tool Decision
 
 ```text
-Need file type?               → file
-Need hash?                    → md5sum / sha256sum
-Need author/timestamps?       → olemeta   [METADATA]
-Need to know if macros exist? → oleid     [TRIAGE]
-Need actual VBA / IOCs?       → olevba    [VBA ANALYSIS]
-Need a specific VBA string?   → grep      [AFTER VBA EXTRACTION]
-Need raw printable strings?   → strings   [RAW FILE]
-Need XOR-obfuscated clue?      → xorsearch [OBFUSCATION]
-Need macro emulation?         → vmonkey   [EMULATION]
-Need Registry changes?        → Regshot   [DYNAMIC]
-Need runtime behavior?        → Procmon   [DYNAMIC]
-Need network evidence?        → Wireshark [DYNAMIC]
+Need behavioral overview?        → Sandbox (Hybrid Analysis / ANY.RUN / approved equivalent)
+Need process tree/command line?   → Sandbox / Procmon / Process monitoring
+Need actual DNS requests?        → Sandbox / Wireshark
+Need file type?                  → file
+Need hash?                       → md5sum / sha256sum
+Need author/timestamps?          → olemeta   [METADATA]
+Need to know if macros exist?    → oleid     [TRIAGE]
+Need actual VBA / IOCs?          → olevba    [VBA ANALYSIS]
+Need a specific VBA string?      → grep      [AFTER VBA EXTRACTION]
+Need raw printable strings?      → strings   [RAW FILE]
+Need XOR-obfuscated clue?         → xorsearch [OBFUSCATION]
+Need macro emulation?            → vmonkey   [EMULATION]
+Need Registry changes?           → Regshot   [DYNAMIC]
+Need runtime behavior?           → Procmon   [DYNAMIC / WINDOWS]
+Need network evidence?           → Wireshark [DYNAMIC]
 ```
 
 ## Time-Saving Rule
@@ -240,3 +289,7 @@ Need network evidence?        → Wireshark [DYNAMIC]
 `What am I looking for? → Identify the stage → Pick the tool that exposes that evidence → Narrow the output → Inspect context → Correlate → Verify`
 
 If that tool reaches a dead end, pivot to the next evidence source instead of guessing.
+
+A useful pattern from hands-on analysis is:
+
+**Sandbox clue → static document evidence → dynamic/network correlation → verify.**
