@@ -19,11 +19,9 @@ def is_mounted():
         )
         if result.returncode != 0:
             return False
-
         parts = result.stdout.strip().split()
         if len(parts) < 2:
             return False
-
         target = os.path.realpath(parts[0])
         mountpoint = os.path.realpath(MOUNT_POINT)
         fstype = parts[1]
@@ -33,8 +31,7 @@ def is_mounted():
 
 
 def refresh_status():
-    mounted = is_mounted()
-    if mounted:
+    if is_mounted():
         status_label.config(text="●  SHARE MOUNTED", fg="green")
         detail_label.config(text="Host transfer folder is connected.")
         mount_button.config(state="disabled")
@@ -48,9 +45,7 @@ def refresh_status():
 
 def mount_share():
     os.makedirs(MOUNT_POINT, exist_ok=True)
-    result = subprocess.run([
-        "pkexec", "mount", "-t", "vboxsf", SHARE_NAME, MOUNT_POINT
-    ])
+    result = subprocess.run(["pkexec", "mount", "-t", "vboxsf", SHARE_NAME, MOUNT_POINT])
     refresh_status()
     if result.returncode != 0 and not is_mounted():
         messagebox.showerror("Mount Failed", "The VirtualBox shared folder was not mounted.")
@@ -75,7 +70,7 @@ root.title("REMnux Transfer Control")
 root.geometry("480x320")
 root.resizable(False, False)
 
- tk_title = tk.Label(root, text="REMnux Transfer Control", font=("Sans", 18, "bold"))
+tk_title = tk.Label(root, text="REMnux Transfer Control", font=("Sans", 18, "bold"))
 tk_title.pack(pady=(25, 15))
 
 status_label = tk.Label(root, text="Checking...", font=("Sans", 16, "bold"))
