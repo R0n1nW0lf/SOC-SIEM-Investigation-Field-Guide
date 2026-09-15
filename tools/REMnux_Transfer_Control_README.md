@@ -22,13 +22,14 @@ The status is verified with `findmnt`; the GUI does not assume that a mount or u
 
 The red status confirms that the host transfer folder is disconnected from the REMnux VM.
 
-**[INSERT IMAGE — SHARE UNMOUNTED HERE]**
+<img width="1170" height="813" alt="Remnux unmounted" src="https://github.com/user-attachments/assets/50268d71-e260-4d9f-9562-2bb3894b7f9f" />
 
 ### Share Mounted
 
 The green status confirms that the VirtualBox shared folder is actively mounted and available to the REMnux VM.
 
-**[INSERT IMAGE — SHARE MOUNTED HERE]**
+<img width="1108" height="775" alt="remnux mounted" src="https://github.com/user-attachments/assets/476f2d7a-9d88-4921-9dc5-7a9b076db96b" />
+
 
 The visual status is based on the actual `vboxsf` mount state rather than simply remembering which button was last pressed.
 
