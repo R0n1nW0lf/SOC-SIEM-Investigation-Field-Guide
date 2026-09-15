@@ -44,6 +44,60 @@ A sandbox result is evidence, not an automatic verdict. If sandbox and static re
 
 ---
 
+## IOC Relationship Verification — Do Not Stop at the IOC
+
+Finding an IP, domain, URL, hash, or filename does **not** automatically mean it is the artifact relevant to the question or incident. A report may contain several legitimate, malicious, or unrelated network endpoints at different stages of execution.
+
+**Do not just find the IOC. Find what it belongs to.**
+
+```text
+Find IOC
+   ↓
+Identify associated process / file
+   ↓
+Determine behavior or purpose
+   ↓
+Correlate with incident timeline
+   ↓
+Verify against another evidence source when possible
+   ↓
+Conclusion
+```
+
+For an IP and port, prefer evidence that directly associates the endpoint with the relevant process:
+
+```text
+IP:PORT → Associated Process → Parent/Child Chain → Behavior → Timeline
+```
+
+Example investigation logic:
+
+- A sandbox may show one IP as a download server and another IP as a connection made by the exploited process.
+- Both IPs can be real evidence, but only one may answer the investigation question.
+- A generic **Contacted Server** entry is weaker for process attribution than a **Contacted Host / Network Connection** entry that identifies the associated process.
+- If VirusTotal relationships or one sandbox do not expose the relationship you need, treat that source as a dead end for that question and pivot to another sandbox or telemetry source.
+- Do not change an IOC just because an answer was rejected. Return to the evidence and identify the missing relationship.
+
+Useful pivot pattern:
+
+```text
+VirusTotal / reputation lookup
+        ↓
+Relationship available? ── YES → Correlate and verify
+        │
+        NO
+        ↓
+Hybrid Analysis / ANY.RUN / other approved sandbox
+        ↓
+Contacted Hosts / Process Tree / Network Activity
+        ↓
+Match IOC + Process + Behavior + Timeline
+        ↓
+Verify
+```
+
+---
+
 ## Before Using `oleid`, `olemeta`, or `olevba`
 
 These commands are part of the **oletools** package. If they are not already installed on the Linux analysis machine, install oletools first.
@@ -266,6 +320,7 @@ olevba --deobf --reveal filename.vba > filename_deobf.vba
 
 ```text
 Need behavioral overview?        → Sandbox (Hybrid Analysis / ANY.RUN / approved equivalent)
+Need IOC relationship/context?   → Sandbox process/network correlation; pivot if reputation source is a dead end
 Need process tree/command line?   → Sandbox / Procmon / Process monitoring
 Need actual DNS requests?        → Sandbox / Wireshark
 Need file type?                  → file
