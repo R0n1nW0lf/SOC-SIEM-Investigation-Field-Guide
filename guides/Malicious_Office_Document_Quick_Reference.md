@@ -110,7 +110,9 @@ sudo -H pip install -U 'oletools[full]'
 
 This installs/updates **oletools with the full optional dependencies**. In some training/lab Linux environments this may work when the `pipx` method does not.
 
-### Alternative isolated installation on modern Debian/Ubuntu/Kali-style systems
+### Preferred isolated installation on modern Debian/Ubuntu/REMnux systems
+
+Modern Python environments may block system-wide `pip install` with an externally-managed-environment warning. Do not force system Python when that happens. Use `pipx`:
 
 ```bash
 sudo apt update
@@ -119,7 +121,9 @@ pipx ensurepath
 pipx install oletools
 ```
 
-Then verify the tools are available:
+If installation succeeds but `/home/<user>/.local/bin` is not active in the current PATH, close the terminal and open a new one after `pipx ensurepath`.
+
+Then verify:
 
 ```bash
 oleid --help
@@ -127,9 +131,50 @@ olemeta --help
 olevba --help
 ```
 
-If `pipx` installation succeeds but the commands are not found immediately after `pipx ensurepath`, open a new terminal/session and try again. If the lab environment still does not expose the commands, use the working lab installation method above.
-
 > **Already installed?** Skip this section and go directly to analysis.
+
+---
+
+## oletools Suite — Pick the Tool for the Evidence
+
+Installing `oletools` provides more than `oleid`, `olemeta`, and `olevba`. Do **not** run every utility automatically. Start with the investigation question and choose the tool that can expose the evidence you need.
+
+| Tool | Use it for |
+| --- | --- |
+| **`olevba`** | Extract and analyze VBA/macros; AutoExec triggers, suspicious keywords, IOCs, encoded strings, and deobfuscation. |
+| **`oleid`** | Quick Office/OLE triage; identify macros and suspicious document features. |
+| **`olemeta`** | Document metadata such as author, creation/modification timestamps, and properties. |
+| **`oleobj`** | Find and extract embedded OLE objects/files from Office or RTF documents. |
+| **`olemap`** | Inspect the internal structure/layout of an OLE file for deeper analysis. |
+| **`oledir`** | List the internal OLE directory, storage, and stream structure. |
+| **`olebrowse`** | Interactively browse OLE streams and storage when manual inspection is needed. |
+| **`olefile`** | Lower-level OLE file inspection/access for deeper structural work. |
+| **`oletimes`** | Inspect timestamps associated with OLE streams/storage for timeline or forensic work. |
+| **`rtfobj`** | Analyze RTF documents and locate/extract embedded objects; useful for suspicious or exploit-bearing RTF files. |
+| **`msodde`** | Detect/extract DDE links and commands from Microsoft Office documents. |
+| **`mraptor`** | Rapid VBA macro risk triage based on potentially malicious macro characteristics. |
+| **`ftguess`** | Guess the actual file type when an extension may be misleading. |
+| **`ezhexviewer`** | View raw file content in hexadecimal form for lower-level inspection. |
+| **`pyxswf`** | Extract/decompress embedded SWF/Flash content; mainly useful for older malware/exploit samples. |
+
+### Quick memory map
+
+```text
+What is this file really?       → ftguess
+Quick Office triage             → oleid
+Who / when metadata             → olemeta
+What does the macro do?         → olevba
+Embedded object/file?           → oleobj
+Suspicious RTF object?          → rtfobj
+DDE command/link?               → msodde
+OLE timestamps/timeline?        → oletimes
+Deep OLE structure?             → oledir / olemap / olebrowse / olefile
+Quick macro-risk check?         → mraptor
+Raw hex inspection?             → ezhexviewer
+Legacy embedded Flash/SWF?      → pyxswf
+```
+
+**Rule:** `Question → Correct Tool → Evidence → Correlate → Verify`
 
 ---
 
@@ -323,14 +368,21 @@ Need behavioral overview?        → Sandbox (Hybrid Analysis / ANY.RUN / approv
 Need IOC relationship/context?   → Sandbox process/network correlation; pivot if reputation source is a dead end
 Need process tree/command line?   → Sandbox / Procmon / Process monitoring
 Need actual DNS requests?        → Sandbox / Wireshark
-Need file type?                  → file
+Need file type?                  → file / ftguess
 Need hash?                       → md5sum / sha256sum
 Need author/timestamps?          → olemeta   [METADATA]
 Need to know if macros exist?    → oleid     [TRIAGE]
 Need actual VBA / IOCs?          → olevba    [VBA ANALYSIS]
+Need embedded OLE object?        → oleobj    [OBJECT EXTRACTION]
+Need suspicious RTF object?      → rtfobj    [RTF ANALYSIS]
+Need DDE command/link?           → msodde    [DDE ANALYSIS]
+Need OLE stream timestamps?      → oletimes  [FORENSICS]
+Need deeper OLE structure?       → oledir / olemap / olebrowse / olefile
+Need quick macro-risk triage?    → mraptor
+Need raw hex view?               → ezhexviewer
 Need a specific VBA string?      → grep      [AFTER VBA EXTRACTION]
 Need raw printable strings?      → strings   [RAW FILE]
-Need XOR-obfuscated clue?         → xorsearch [OBFUSCATION]
+Need XOR-obfuscated clue?        → xorsearch [OBFUSCATION]
 Need macro emulation?            → vmonkey   [EMULATION]
 Need Registry changes?           → Regshot   [DYNAMIC]
 Need runtime behavior?           → Procmon   [DYNAMIC / WINDOWS]
