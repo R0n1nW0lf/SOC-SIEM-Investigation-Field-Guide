@@ -10,7 +10,15 @@ Use this page when you already know **what you want to find** and need the faste
 
 These commands are part of the **oletools** package. If they are not already installed on the Linux analysis machine, install oletools first.
 
-Recommended isolated installation on modern Debian/Ubuntu/Kali-style systems:
+### Installation method that worked in the Linux lab
+
+```bash
+sudo -H pip install -U 'oletools[full]'
+```
+
+This installs/updates **oletools with the full optional dependencies**. In some training/lab Linux environments this may work when the `pipx` method does not.
+
+### Alternative isolated installation on modern Debian/Ubuntu/Kali-style systems
 
 ```bash
 sudo apt update
@@ -27,7 +35,7 @@ olemeta --help
 olevba --help
 ```
 
-If the commands are not found immediately after `pipx ensurepath`, open a new terminal/session and try again.
+If `pipx` installation succeeds but the commands are not found immediately after `pipx ensurepath`, open a new terminal/session and try again. If the lab environment still does not expose the commands, use the working lab installation method above.
 
 > **Already installed?** Skip this section and go directly to analysis.
 
