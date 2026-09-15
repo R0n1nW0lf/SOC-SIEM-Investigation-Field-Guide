@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=REMnux Transfer Control
+Comment=Manually mount and unmount a VirtualBox transfer share
+Exec=/home/remnux/remnux-transfer-control.py
+Icon=folder-remote
+Terminal=false
+Categories=Utility;
