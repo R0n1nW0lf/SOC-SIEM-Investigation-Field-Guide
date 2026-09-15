@@ -7,8 +7,11 @@ The purpose is to make the transfer state visible and easy to control without re
 ## What It Does
 
 - Shows the actual VirtualBox shared-folder mount status.
-- Green `SHARE MOUNTED` status when the configured desktop directory is mounted as `vboxsf`.
-- Red `SHARE UNMOUNTED` status when it is disconnected.
+- Green `SHARE UNMOUNTED` status when the host transfer folder is disconnected.
+- Red `SHARE MOUNTED` status when the host transfer folder is connected.
+- Changes the desktop `REMnux-Transfer` folder icon to match the verified state.
+- Green folder icon = unmounted / disconnected.
+- Red folder icon = mounted / host connection open.
 - Mount and Unmount buttons.
 - Open Transfer Folder button.
 - Automatically re-checks mount state every two seconds.
@@ -18,20 +21,19 @@ The status is verified with `findmnt`; the GUI does not assume that a mount or u
 
 ## GUI Demonstration
 
-### Share Unmounted
+### Share Unmounted — Green / Disconnected
 
-The red status confirms that the host transfer folder is disconnected from the REMnux VM.
+The green GUI status and green desktop folder icon indicate that the host transfer folder is disconnected from the REMnux VM.
 
-<img width="1170" height="813" alt="Remnux unmounted" src="https://github.com/user-attachments/assets/50268d71-e260-4d9f-9562-2bb3894b7f9f" />
+**[INSERT IMAGE — GREEN SHARE UNMOUNTED + GREEN FOLDER HERE]**
 
-### Share Mounted
+### Share Mounted — Red / Host Connection Open
 
-The green status confirms that the VirtualBox shared folder is actively mounted and available to the REMnux VM.
+The red GUI status and red desktop folder icon indicate that the VirtualBox shared folder is actively mounted and available to the REMnux VM.
 
-<img width="1108" height="775" alt="remnux mounted" src="https://github.com/user-attachments/assets/476f2d7a-9d88-4921-9dc5-7a9b076db96b" />
+**[INSERT IMAGE — RED SHARE MOUNTED + RED FOLDER HERE]**
 
-
-The visual status is based on the actual `vboxsf` mount state rather than simply remembering which button was last pressed.
+The GUI and desktop folder provide two visual indicators of the same verified state. The status is based on the actual `vboxsf` mount state rather than simply remembering which button was last pressed.
 
 ## Default Configuration
 
@@ -57,6 +59,7 @@ VirtualBox Shared Folder settings should leave **Auto-mount disabled** if the go
 - Tkinter
 - `findmnt`
 - `pkexec`
+- `gio` for desktop folder icon metadata
 
 Useful checks:
 
@@ -64,6 +67,7 @@ Useful checks:
 modinfo vboxsf
 python3 -m tkinter
 which pkexec
+which gio
 ```
 
 ## Installation
@@ -101,7 +105,9 @@ Copy it into the VM's incoming/uncleaned sample directory
     ↓
 Unmount share
     ↓
-Verify GUI shows SHARE UNMOUNTED
+Verify GUI shows GREEN SHARE UNMOUNTED
+    ↓
+Verify desktop transfer folder is GREEN
     ↓
 Apply the required network isolation for the analysis
     ↓
@@ -109,6 +115,13 @@ Analyze a working copy
 ```
 
 A shared folder is a transfer mechanism, not a malware containment boundary. Disconnect it before opening or analyzing an untrusted sample, and use appropriate VM isolation and snapshots.
+
+## Visual Safety Principle
+
+```text
+GREEN = UNMOUNTED = DISCONNECTED
+RED   = MOUNTED   = HOST CONNECTION OPEN
+```
 
 ## Design Principle
 
