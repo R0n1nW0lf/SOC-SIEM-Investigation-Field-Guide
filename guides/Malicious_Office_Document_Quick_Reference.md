@@ -6,6 +6,33 @@ Use this page when you already know **what you want to find** and need the faste
 
 ---
 
+## Before Using `oleid`, `olemeta`, or `olevba`
+
+These commands are part of the **oletools** package. If they are not already installed on the Linux analysis machine, install oletools first.
+
+Recommended isolated installation on modern Debian/Ubuntu/Kali-style systems:
+
+```bash
+sudo apt update
+sudo apt install pipx
+pipx ensurepath
+pipx install oletools
+```
+
+Then verify the tools are available:
+
+```bash
+oleid --help
+olemeta --help
+olevba --help
+```
+
+If the commands are not found immediately after `pipx ensurepath`, open a new terminal/session and try again.
+
+> **Already installed?** Skip this section and go directly to analysis.
+
+---
+
 ## First: Know Which Stage You Are In
 
 | Stage / Tool | What it answers | Example |
