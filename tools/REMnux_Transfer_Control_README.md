@@ -25,13 +25,13 @@ The status is verified with `findmnt`; the GUI does not assume that a mount or u
 
 The green GUI status and green desktop folder icon indicate that the host transfer folder is disconnected from the REMnux VM.
 
-**[INSERT IMAGE — GREEN SHARE UNMOUNTED + GREEN FOLDER HERE]**
+<img width="1193" height="899" alt="Remnux unmounted" src="https://github.com/user-attachments/assets/05e1a97c-9d0c-45de-bd45-b175b561c6e8" />
 
 ### Share Mounted — Red / Host Connection Open
 
 The red GUI status and red desktop folder icon indicate that the VirtualBox shared folder is actively mounted and available to the REMnux VM.
 
-**[INSERT IMAGE — RED SHARE MOUNTED + RED FOLDER HERE]**
+<img width="1183" height="891" alt="remnux mounted" src="https://github.com/user-attachments/assets/5710e2f0-063d-45ed-b127-a43043281d85" />
 
 The GUI and desktop folder provide two visual indicators of the same verified state. The status is based on the actual `vboxsf` mount state rather than simply remembering which button was last pressed.
 
