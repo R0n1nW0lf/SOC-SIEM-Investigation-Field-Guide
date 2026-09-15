@@ -16,6 +16,22 @@ The purpose is to make the transfer state visible and easy to control without re
 
 The status is verified with `findmnt`; the GUI does not assume that a mount or unmount succeeded just because a button was clicked.
 
+## GUI Demonstration
+
+### Share Unmounted
+
+The red status confirms that the host transfer folder is disconnected from the REMnux VM.
+
+**[INSERT IMAGE — SHARE UNMOUNTED HERE]**
+
+### Share Mounted
+
+The green status confirms that the VirtualBox shared folder is actively mounted and available to the REMnux VM.
+
+**[INSERT IMAGE — SHARE MOUNTED HERE]**
+
+The visual status is based on the actual `vboxsf` mount state rather than simply remembering which button was last pressed.
+
 ## Default Configuration
 
 The script expects the VirtualBox shared folder to be named:
