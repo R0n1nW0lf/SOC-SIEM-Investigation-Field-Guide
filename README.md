@@ -349,19 +349,46 @@ When investigating a WAF alert, check:
 
 For SOC investigations, the most critical firewall logs are generally the traffic logs that record communications passing through the firewall.
 
-**Key fields to check:**
+### Key Firewall Log Fields
 
-- Timestamp
-- Source IP and source port
-- Destination IP and destination port
-- Interface details
-- Geographic location data, when available
-- Firewall action such as `ALLOW`, `ACCEPT`, `DENY`, `DROP`, or `REJECT`
-- Protocol and application identification, when available
+| Field | Meaning |
+| --- | --- |
+| `date` | Event date |
+| `time` | Event time |
+| `devname` | Firewall/device hostname |
+| `devid` | Device identifier |
+| `eventtime` | Event timestamp, often in device/vendor format |
+| `tz` | Time zone |
+| `logid` | Log/event identifier |
+| `type` | Log type, such as traffic or event |
+| `subtype` | Log subtype, such as forward, system, or other vendor-defined category |
+| `level` | Log severity/level |
+| `srcip` | Source IP address |
+| `srcname` | Source hostname, when available |
+| `srcport` | Source port |
+| `srcintf` | Source interface name |
+| `srcintfrole` | Role of the source interface |
+| `dstip` | Destination IP address |
+| `dstport` | Destination port |
+| `dstintf` | Destination interface name |
+| `dstintfrole` | Role of the destination interface |
+| `srccountry` | Source IP geographic/country information |
+| `dstcountry` | Destination IP geographic/country information |
+| `action` | Firewall decision/action, such as allow, accept, deny, drop, or reject |
+| `service` | Identified service information |
+| `transip` | NAT-translated IP address |
+| `transport` | NAT-translated port |
+| `duration` | Connection/session duration |
+| `sentbyte` | Number of bytes sent |
+| `rcvdbyte` | Number of bytes received |
+| `sentpkt` | Number of packets sent |
+| `rcvdpkt` | Number of packets received |
 
-**Investigation chain:**
+**Fast investigation chain:**
 
-`Timestamp → Source IP/Port → Destination IP/Port → Interface → Protocol/Application → Action → Correlate`
+`Time → Source → Destination → Port/Service → Interface → Action → NAT → Duration → Bytes/Packets → Correlate`
+
+Bytes, packet counts, and duration provide useful context about the amount and direction of communication, but they should be interpreted with the firewall action, connection state, protocol/application, and other evidence before determining impact.
 
 ### NGFW Application Awareness
 
