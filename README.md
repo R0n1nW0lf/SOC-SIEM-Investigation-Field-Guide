@@ -390,6 +390,25 @@ For SOC investigations, the most critical firewall logs are generally the traffi
 
 Bytes, packet counts, and duration provide useful context about the amount and direction of communication, but they should be interpreted with the firewall action, connection state, protocol/application, and other evidence before determining impact.
 
+### Firewall Log Field Quick Reference
+
+Use this compact grouping when reading raw firewall traffic logs:
+
+**Identity/time:** `date`, `time`, `devname`, `devid`, `logid`, `type`, `subtype`
+
+**Traffic:** `srcip`, `srcport`, `srcintf` → `dstip`, `dstport`, `dstintf`
+
+**Decision/context:** `action`, `service`, `srccountry`, `dstcountry`
+
+**NAT:** `transip`, `transport`
+
+**Connection evidence:** `duration`, `sentbyte`, `rcvdbyte`, `sentpkt`, `rcvdpkt`
+
+**Mental reference:**
+
+`When/which device? → Who talked to whom? → What service/action? → Was NAT used? → How much communication occurred?`
+
+
 ### NGFW Application Awareness
 
 A Next-Generation Firewall (NGFW) can identify application-layer traffic rather than relying only on port numbers. Do not automatically assume that a service is being used simply because traffic uses its common port.
