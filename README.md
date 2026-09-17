@@ -452,6 +452,46 @@ Port `443` commonly carries HTTPS, but if the NGFW identifies the application as
 
 > **Port number is a clue, not proof of the application. When application-aware firewall telemetry is available, correlate the port with the identified application/protocol and the surrounding evidence.**
 
+## VPN Log Analysis Quick Reference
+
+VPN authentication logs are easier to investigate when the raw events are reconstructed into a simple sequence.
+
+**Primary pivots:**
+
+`Timestamp → User → Remote/Public IP → Source Region → Authentication Result → Tunnel/Session Activity`
+
+### Authentication Timeline and Brute-Force Pattern
+
+Do not evaluate repeated login failures only as isolated events. Use timestamps to determine their sequence, frequency, and spacing.
+
+A pattern such as:
+
+`Failure → Failure → Failure → Failure → Success`
+
+for the **same account and source IP within a short time window** is consistent with password guessing or brute-force activity and should be investigated further. The pattern alone does not prove account compromise.
+
+A successful authentication after repeated failures is especially important because it may indicate that a credential was eventually accepted. Pivot from that successful login into the VPN session and correlate subsequent activity.
+
+**Investigation chain:**
+
+`Same user → Same source IP → Repeated failures → Short time intervals → Successful login → Investigate session activity`
+
+**Analyst reminder:**
+
+> **Timestamps are evidence of sequence. They can turn separate authentication failures into a recognizable behavior pattern.**
+
+### VPN Address Correlation
+
+- `remip` or equivalent remote/public IP fields identify where the VPN connection originated.
+- `tunnelip`, when assigned and logged by the VPN, can be used as a pivot to correlate the authenticated VPN session with subsequent internal network activity.
+
+**Correlation chain:**
+
+`User → Remote IP → Authentication result → Tunnel IP → Internal activity`
+
+VPN routing, split tunneling, NAT, and vendor configuration can affect which address appears in downstream logs, so verify the environment rather than assuming every event will expose the tunnel IP.
+
+
 ## Purpose
 
 This repository is part of my cybersecurity portfolio and demonstrates how I organize and apply SOC investigation concepts during authorized training and lab environments.
