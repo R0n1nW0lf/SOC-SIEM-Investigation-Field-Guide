@@ -460,6 +460,29 @@ VPN authentication logs are easier to investigate when the raw events are recons
 
 `Timestamp → User → Remote/Public IP → Source Region → Authentication Result → Tunnel/Session Activity`
 
+### Reconstruct Unclear Logs for Analysis
+
+When a raw log is difficult to read, keep the **original log unchanged** and reconstruct or reformat a **separate working copy** into a layout that is easier to analyze.
+
+A practical method is to paste the working copy into **Notepad++** and separate, align, search, or highlight the fields that matter to the investigation.
+
+For example, convert a dense VPN log into:
+
+`Timestamp | User | Source IP | Region | Result`
+
+This can make repeated events, time intervals, failures, successes, duplicate values, and other patterns much easier to recognize.
+
+**Workflow:**
+
+`Preserve original evidence → Create separate working copy → Paste into Notepad++ → Reconstruct important fields → Analyze patterns → Verify findings against original log`
+
+**Analyst rule:**
+
+> **Reconstruct for readability, not to change the evidence. Keep the original raw log available and verify conclusions against it before reporting.**
+
+This technique can also be used with firewall, proxy, authentication, EDR, and other dense text logs.
+
+
 ### Authentication Timeline and Brute-Force Pattern
 
 Do not evaluate repeated login failures only as isolated events. Use timestamps to determine their sequence, frequency, and spacing.
