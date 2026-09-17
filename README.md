@@ -31,6 +31,7 @@ The guide is designed as a quick-reference resource for SOC investigations and w
 - TCP flags and connection-state interpretation
 - Wireshark investigation filters
 - WAF alert and action interpretation
+- Firewall traffic log analysis and NGFW application identification
 
 ## Investigation Philosophy
 
@@ -343,6 +344,38 @@ When investigating a WAF alert, check:
 **Analyst mindset:**
 
 > **Detection tells you where to investigate. The WAF action and correlated evidence tell you what actually happened.**
+
+## Firewall Traffic Log Quick Reference
+
+For SOC investigations, the most critical firewall logs are generally the traffic logs that record communications passing through the firewall.
+
+**Key fields to check:**
+
+- Timestamp
+- Source IP and source port
+- Destination IP and destination port
+- Interface details
+- Geographic location data, when available
+- Firewall action such as `ALLOW`, `ACCEPT`, `DENY`, `DROP`, or `REJECT`
+- Protocol and application identification, when available
+
+**Investigation chain:**
+
+`Timestamp → Source IP/Port → Destination IP/Port → Interface → Protocol/Application → Action → Correlate`
+
+### NGFW Application Awareness
+
+A Next-Generation Firewall (NGFW) can identify application-layer traffic rather than relying only on port numbers. Do not automatically assume that a service is being used simply because traffic uses its common port.
+
+For example:
+
+`Destination Port: 443 | Application: SSH | Action: DENY`
+
+Port `443` commonly carries HTTPS, but if the NGFW identifies the application as SSH, investigate the traffic as SSH activity rather than assuming it is HTTPS based only on the port.
+
+**Analyst rule:**
+
+> **Port number is a clue, not proof of the application. When application-aware firewall telemetry is available, correlate the port with the identified application/protocol and the surrounding evidence.**
 
 ## Purpose
 
