@@ -409,6 +409,35 @@ Use this compact grouping when reading raw firewall traffic logs:
 `When/which device? → Who talked to whom? → What service/action? → Was NAT used? → How much communication occurred?`
 
 
+### Firewall Block Response
+
+A firewall can block traffic without necessarily notifying the sender. Distinguish between a silent drop and an active rejection when interpreting firewall behavior.
+
+- `DROP` → silently discards traffic; typically no explicit rejection response is returned to the sender.
+- `REJECT` → actively rejects the traffic and normally returns a response indicating that the connection cannot proceed.
+- `DENY` → behavior can depend on the firewall vendor and configuration. Verify the product, rule behavior, and logs before assuming whether a response was sent.
+
+**Analyst rule:**
+
+> **Blocked ≠ sender was necessarily notified. Determine whether the firewall silently dropped or actively rejected the traffic.**
+
+### Unique Value Check
+
+When an investigation asks for **different**, **unique**, or **open** destination ports, do not count repeated `dstport` entries as separate ports.
+
+Example:
+
+`443, 1521, 53, 443 → 3 unique destination ports, not 4`
+
+Multiple firewall log events can represent repeated activity against the same destination port. Distinguish the **number of events/attempts** from the **number of unique ports**.
+
+This same check can also apply to repeated IP addresses, domains, users, processes, hashes, and other indicators when the investigation asks for unique values.
+
+**Analyst reminder:**
+
+> **Event count ≠ unique value count. Check for duplicates before reporting the total.**
+
+
 ### NGFW Application Awareness
 
 A Next-Generation Firewall (NGFW) can identify application-layer traffic rather than relying only on port numbers. Do not automatically assume that a service is being used simply because traffic uses its common port.
