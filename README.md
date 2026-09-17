@@ -30,6 +30,7 @@ The guide is designed as a quick-reference resource for SOC investigations and w
 - Windows Registry hive shorthand and persistence paths
 - TCP flags and connection-state interpretation
 - Wireshark investigation filters
+- WAF alert and action interpretation
 
 ## Investigation Philosophy
 
@@ -311,6 +312,37 @@ Do not rely on one artifact. Correlate behavior across the available evidence.
 **`Process → File → Registry → Network → Persistence → IOC`**
 
 Preserve evidence before remediation or resetting the lab. Start with the evidence that directly answers the investigation question, then go deeper only when necessary.
+
+## WAF Investigation Quick Reference
+
+A Web Application Firewall (WAF) evaluates inbound HTTP/HTTPS application traffic against configured rules and can allow, block, deny, or challenge requests before they reach the web application.
+
+**WAF investigation rule:** A WAF alert proves that a suspicious web request was detected. It does **not** by itself prove that exploitation succeeded.
+
+When investigating a WAF alert, check:
+
+- Source and destination
+- HTTP method and requested URI
+- WAF action: `ALLOW`, `BLOCK`, `DENY`, or `CHALLENGE`
+- HTTP status code and response details
+- Whether the request reached the application
+- Application/server logs for resulting behavior
+- Endpoint/EDR evidence when relevant
+
+**Interpretation:**
+
+- `403 Forbidden` together with a confirmed WAF block is strong evidence that the request was stopped at the WAF.
+- `200 OK` means the request was processed successfully at the HTTP level, but **does not by itself prove exploitation succeeded**.
+- A malicious request that was `ALLOW`ed requires deeper investigation to determine whether the application was affected.
+- Misconfigured WAF rules can cause false positives by blocking legitimate requests or false negatives by allowing malicious requests through.
+
+**Investigation chain:**
+
+`WAF alert → Request → WAF action → HTTP response → Did it reach the application? → Application/endpoint evidence → Determine actual impact`
+
+**Analyst mindset:**
+
+> **Detection tells you where to investigate. The WAF action and correlated evidence tell you what actually happened.**
 
 ## Purpose
 
