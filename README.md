@@ -337,6 +337,30 @@ When investigating a WAF alert, check:
 - A malicious request that was `ALLOW`ed requires deeper investigation to determine whether the application was affected.
 - Misconfigured WAF rules can cause false positives by blocking legitimate requests or false negatives by allowing malicious requests through.
 
+### HTTP Status Code Quick Reference
+
+When HTTP response status is available in WAF, proxy, web-server, IDS/IPS, or SIEM evidence, highlight the status code and its category so the analyst can quickly identify how the application/server responded.
+
+| Range / Code | Meaning | Analyst Attention |
+| --- | --- | --- |
+| `100–199` | Informational | Request/response processing information |
+| `200–299` | Successful HTTP response | Request was successfully handled at the HTTP level; this does **not** by itself prove an attack succeeded |
+| `300–399` | Redirection | Request was redirected; review the destination/location and surrounding request |
+| `400–499` | Client error | Request was rejected, invalid, unauthorized, forbidden, or content was not found depending on the exact code |
+| `500–599` | Server error | Server/application encountered an error or could not complete the request |
+
+Common examples:
+
+- `200 OK` → successful HTTP response
+- `301 Permanent Redirect` → redirected to another location
+- `403 Forbidden` → requested access was forbidden
+- `404 Not Found` → requested content was not found
+- `503 Service Unavailable` → service/server was unavailable
+
+**Highlighting rule:** Make status codes visually distinct and show their category beside them, for example `200 → SUCCESSFUL RESPONSE`, `301 → REDIRECTION`, `403 → CLIENT ERROR / FORBIDDEN`, and `503 → SERVER ERROR / SERVICE UNAVAILABLE`.
+
+> **HTTP success ≠ exploit success. HTTP failure/error ≠ automatic proof an attack was blocked by the WAF. Correlate the response code with WAF action, request content, application logs, and other evidence.**
+
 ### Web Attack URL Pattern Quick Reference
 
 When reviewing WAF, proxy, web-server, IDS/IPS, or SIEM logs, inspect the requested URL/URI and parameters for attack-related patterns. These strings are investigation indicators and should be correlated with the WAF action, HTTP response, application logs, and other evidence before determining whether exploitation succeeded.
