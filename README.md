@@ -211,6 +211,32 @@ Filters can be combined with `&&` for **AND**, `||` for **OR**, and `!` for **NO
 
 A useful filter reduces the haystack; it does not determine whether the remaining traffic is malicious. Always correlate network findings with process, file, Registry, endpoint, and timeline evidence.
 
+### Large Log Files — Filter Instead of Opening
+
+Very large logs can overwhelm or crash GUI text editors and lab environments. When working with a large file, avoid loading the entire log into an editor when the investigation only requires a specific field, value, or pattern. Use streaming command-line tools such as `awk`, `grep`, `sort`, `uniq`, and `less` to reduce the data first.
+
+For example, after verifying that the requesting/source IP is the third whitespace-separated field:
+
+```bash
+awk '{print $3}' http.log | sort | uniq -c | sort -nr | head
+```
+
+This extracts the source-IP field, groups identical values, counts them, sorts the counts from highest to lowest, and displays the highest-requesting IPs.
+
+**Workflow:**
+
+`Confirm log structure → Extract relevant field → Count/group values → Sort results → Investigate the highest-interest entries → Verify against raw evidence`
+
+For targeted review:
+
+```bash
+grep "KEYWORD" http.log | less
+```
+
+Use `less` when browsing a large log without loading the entire file into a normal GUI editor.
+
+> **Large-log rule: Do not read a massive log line by line when the question can be answered by filtering and aggregation. Preserve the raw log, reduce the haystack, then investigate the evidence that matters.**
+
 ### Know When to Pivot
 
 If expected evidence is absent, do not immediately assume the activity never happened.
