@@ -374,7 +374,9 @@ When reviewing WAF, proxy, web-server, IDS/IPS, or SIEM logs, inspect the reques
 
 **Useful review/highlight keywords and patterns:**
 
-`<script>`, `</script>`, `<h1>`, `</h1>`, `UNION`, `SELECT`, `OR 1=1`, `CHR(`, `--`, `../`, `/etc/passwd`, `%2F`, `%27`
+`<script>`, `</script>`, `<h1>`, `</h1>`, `UNION`, `SELECT`, `OR 1=1`, `CHR(`, `--`, `../`, `/etc/passwd`, `%2F`, `%27`, `PUT`, `DELETE`, `TRACE`, `CONNECT`, `OPTIONS`
+
+HTTP methods such as `PUT`, `DELETE`, `TRACE`, `CONNECT`, and `OPTIONS` should be surfaced for analyst review when present. These methods can be legitimate; treat them as analyst-interest indicators when their use is unexpected for the application rather than automatically labeling them malicious. Correlate the method with the URI, source, authentication context, WAF action, HTTP response, and application behavior.
 
 URL encoding or character-building functions can hide the readable form of a request. Preserve the original request and, when useful, create a separate decoded working representation for analysis. For example, a sequence of `CHR(number)` expressions can be decoded separately while the original expression remains available for verification.
 
