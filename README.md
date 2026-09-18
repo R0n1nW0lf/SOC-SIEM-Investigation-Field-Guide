@@ -337,6 +337,25 @@ When investigating a WAF alert, check:
 - A malicious request that was `ALLOW`ed requires deeper investigation to determine whether the application was affected.
 - Misconfigured WAF rules can cause false positives by blocking legitimate requests or false negatives by allowing malicious requests through.
 
+### Web Attack URL Pattern Quick Reference
+
+When reviewing WAF, proxy, web-server, IDS/IPS, or SIEM logs, inspect the requested URL/URI and parameters for attack-related patterns. These strings are investigation indicators and should be correlated with the WAF action, HTTP response, application logs, and other evidence before determining whether exploitation succeeded.
+
+| Attack Type | Example Analyst-Interest Patterns |
+| --- | --- |
+| HTML Injection | HTML tags such as `<h1>`, `</h1>`, or other markup inserted into parameters |
+| XSS | Script markup such as `<script>`, `</script>`, or URL-encoded equivalents |
+| SQL Injection | SQL syntax such as `'`, `UNION`, `SELECT`, `OR 1=1`, `--`, `CHR(...)`, and encoded equivalents such as `%27` |
+| Directory Traversal | Repeated `../` or encoded traversal sequences leading toward files such as `/etc/passwd` |
+
+**Useful review/highlight keywords and patterns:**
+
+`<script>`, `</script>`, `<h1>`, `</h1>`, `UNION`, `SELECT`, `OR 1=1`, `CHR(`, `--`, `../`, `/etc/passwd`, `%2F`, `%27`
+
+URL encoding or character-building functions can hide the readable form of a request. Preserve the original request and, when useful, create a separate decoded working representation for analysis. For example, a sequence of `CHR(number)` expressions can be decoded separately while the original expression remains available for verification.
+
+> **Keyword match ≠ successful exploitation. Highlight the pattern, decode/reconstruct when needed, then verify what actually happened using the surrounding evidence.**
+
 **Investigation chain:**
 
 `WAF alert → Request → WAF action → HTTP response → Did it reach the application? → Application/endpoint evidence → Determine actual impact`
