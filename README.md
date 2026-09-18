@@ -237,6 +237,48 @@ Use `less` when browsing a large log without loading the entire file into a norm
 
 > **Large-log rule: Do not read a massive log line by line when the question can be answered by filtering and aggregation. Preserve the raw log, reduce the haystack, then investigate the evidence that matters.**
 
+#### Reusable Large-Log Command Reference
+
+First confirm the log structure before choosing a field number:
+
+```bash
+head -n 5 <LOGFILE>
+```
+
+Then substitute the verified field number for `<FIELD>`. Do **not** assume that IP addresses, ports, methods, status codes, or other values always occupy the same column across different log formats.
+
+| Investigation Goal | Reusable Syntax |
+| --- | --- |
+| Top/most frequent values in any verified field | `awk '{print $<FIELD>}' <LOGFILE> \| sort \| uniq -c \| sort -nr \| head` |
+| Top source/requesting IPs | `awk '{print $<SRC_IP_FIELD>}' <LOGFILE> \| sort \| uniq -c \| sort -nr \| head` |
+| Top destination IPs | `awk '{print $<DST_IP_FIELD>}' <LOGFILE> \| sort \| uniq -c \| sort -nr \| head` |
+| Top source ports | `awk '{print $<SRC_PORT_FIELD>}' <LOGFILE> \| sort \| uniq -c \| sort -nr \| head` |
+| Top destination ports | `awk '{print $<DST_PORT_FIELD>}' <LOGFILE> \| sort \| uniq -c \| sort -nr \| head` |
+| Top HTTP methods | `awk '{print $<METHOD_FIELD>}' <LOGFILE> \| sort \| uniq -c \| sort -nr \| head` |
+| Top HTTP status codes | `awk '{print $<STATUS_FIELD>}' <LOGFILE> \| sort \| uniq -c \| sort -nr \| head` |
+| Top requested URI/path values | `awk '{print $<URI_FIELD>}' <LOGFILE> \| sort \| uniq -c \| sort -nr \| head` |
+| Search a specific IP | `grep -F '<IP>' <LOGFILE> \| less` |
+| Search a specific port/value | `grep -F '<VALUE>' <LOGFILE> \| less` |
+| Search attack/method/status keywords | `grep -Ei '<KEYWORD1>\|<KEYWORD2>\|<KEYWORD3>' <LOGFILE> \| less` |
+
+**Placeholder key:**
+
+- `<LOGFILE>` = log filename/path, for example `http.log`
+- `<FIELD>` = verified whitespace-separated field/column number
+- `<SRC_IP_FIELD>` = verified source/requesting-IP field number
+- `<DST_IP_FIELD>` = verified destination-IP field number
+- `<SRC_PORT_FIELD>` = verified source-port field number
+- `<DST_PORT_FIELD>` = verified destination-port field number
+- `<METHOD_FIELD>` = verified HTTP-method field number
+- `<STATUS_FIELD>` = verified HTTP-response/status field number
+- `<URI_FIELD>` = verified requested URI/path field number
+- `<IP>` = IP address being investigated
+- `<VALUE>` = exact port, domain, user, hash, status code, or other value
+- `<KEYWORD#>` = one or more investigation keywords or patterns
+
+**Analyst reminder:** The reusable syntax is the pattern; the field numbers come from the actual log format. Verify the structure first, then substitute the correct field references.
+
+
 ### Know When to Pivot
 
 If expected evidence is absent, do not immediately assume the activity never happened.
