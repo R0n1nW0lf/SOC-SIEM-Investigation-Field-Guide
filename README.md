@@ -452,6 +452,55 @@ Port `443` commonly carries HTTPS, but if the NGFW identifies the application as
 
 > **Port number is a clue, not proof of the application. When application-aware firewall telemetry is available, correlate the port with the identified application/protocol and the surrounding evidence.**
 
+## IDS / IPS Log Analysis Quick Reference
+
+### IDS vs. IPS
+
+- **IDS — Intrusion Detection System:** Detects suspicious network activity and generates alerts for analyst review.
+- **IPS — Intrusion Prevention System:** Detects suspicious network activity and can take a configured preventive action such as blocking or dropping traffic.
+
+Both can use signature databases containing rules designed to identify known attack patterns. A signature match tells the analyst that traffic matched a detection rule; it does **not** by itself prove that an attack succeeded.
+
+**Investigation chain:**
+
+`IDS/IPS alert → Signature → Source/Destination → Ports/Protocol → Action → Payload/Context → Correlate other evidence → Determine what happened`
+
+### Common IDS / IPS Alert Fields
+
+IDS/IPS alarm output commonly includes network and detection information such as:
+
+| Field | Analyst Use |
+| --- | --- |
+| Timestamp | When the event occurred |
+| Source / Destination IP | Which systems were communicating |
+| Source / Destination Port | Network endpoints and likely service context |
+| Protocol | TCP, UDP, ICMP, or application protocol when identified |
+| Signature / Signature ID | Rule that triggered the alert |
+| Category / Severity | Vendor or ruleset classification and priority |
+| Action | Whether traffic was allowed, alerted, dropped, blocked, or otherwise handled |
+| Payload / Printable Payload | Packet/application content when captured and available |
+| Interface / VLAN | Network location/context when logged |
+
+**Parent process information is normally not part of a network IDS/IPS alert.** Parent/child process relationships generally come from endpoint telemetry such as EDR, Sysmon, Process Hacker, or other host/process-monitoring sources. Correlate endpoint evidence with the IDS/IPS event when process context is needed.
+
+### Direction Matters
+
+Do not assume an IDS/IPS event represents the original request. Use source/destination addresses and ports to determine traffic direction.
+
+For DNS, for example:
+
+`Client ephemeral port → DNS server port 53 = query/request direction`
+
+`DNS server port 53 → Client ephemeral port = response/return direction`
+
+A signature containing `NXDOMAIN Response` indicates a DNS response associated with a non-existent-domain result. Keep the conclusion within the evidence shown by the event; do not infer unrelated historical activity from a single alert.
+
+### IDS / IPS Analyst Rule
+
+> **A signature match is a detection clue, not proof of successful compromise. Read the action, direction, payload, and surrounding evidence before determining impact.**
+
+---
+
 ## VPN Log Analysis Quick Reference
 
 VPN authentication logs are easier to investigate when the raw events are reconstructed into a simple sequence.
