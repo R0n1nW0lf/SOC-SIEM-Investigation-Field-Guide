@@ -278,6 +278,72 @@ Then substitute the verified field number for `<FIELD>`. Do **not** assume that 
 
 **Analyst reminder:** The reusable syntax is the pattern; the field numbers come from the actual log format. Verify the structure first, then substitute the correct field references.
 
+#### Exact Field Search — Count What the Field Actually Means
+
+A broad keyword search can overcount because the same word may appear in another field, URI, message, User-Agent, payload, or other text. When the investigation asks specifically for a method, action, status, result, or another structured value, verify its field number and count the exact field value.
+
+First identify the field position from a known matching record:
+
+```bash
+grep -m 1 -w '<VALUE>' <LOGFILE> | awk '{for(i=1;i<=NF;i++) print i,$i}'
+```
+
+Then count only records where that verified field exactly matches the value:
+
+```bash
+awk '$<FIELD>=="<VALUE>" {count++} END {print count}' <LOGFILE>
+```
+
+Examples after the correct field numbers have been verified:
+
+```bash
+awk '$<METHOD_FIELD>=="DELETE" {count++} END {print count}' <LOGFILE>
+awk '$<ACTION_FIELD>=="REJECT" {count++} END {print count}' <LOGFILE>
+awk '$<ACTION_FIELD>=="DENY" {count++} END {print count}' <LOGFILE>
+awk '$<ACTION_FIELD>=="ALLOW" {count++} END {print count}' <LOGFILE>
+awk '$<STATUS_FIELD>==200 {count++} END {print count}' <LOGFILE>
+awk '$<STATUS_FIELD>==301 {count++} END {print count}' <LOGFILE>
+awk '$<STATUS_FIELD>==302 {count++} END {print count}' <LOGFILE>
+awk '$<STATUS_FIELD>==403 {count++} END {print count}' <LOGFILE>
+awk '$<STATUS_FIELD>==404 {count++} END {print count}' <LOGFILE>
+awk '$<STATUS_FIELD>=500 && $<STATUS_FIELD><600 {count++} END {print count}' <LOGFILE>
+```
+
+For HTTP status categories, after verifying the status field:
+
+```bash
+awk '$<STATUS_FIELD>=200 && $<STATUS_FIELD><300 {count++} END {print count}' <LOGFILE>   # 2xx successful HTTP responses
+awk '$<STATUS_FIELD>=300 && $<STATUS_FIELD><400 {count++} END {print count}' <LOGFILE>   # 3xx redirects
+awk '$<STATUS_FIELD>=400 && $<STATUS_FIELD><500 {count++} END {print count}' <LOGFILE>   # 4xx client errors
+awk '$<STATUS_FIELD>=500 && $<STATUS_FIELD><600 {count++} END {print count}' <LOGFILE>   # 5xx server errors
+```
+
+To inspect rather than count exact field matches:
+
+```bash
+awk '$<FIELD>=="<VALUE>"' <LOGFILE> | less
+```
+
+To see the most common values in a verified field:
+
+```bash
+awk '{print $<FIELD>}' <LOGFILE> | sort | uniq -c | sort -nr | head
+```
+
+**Additional placeholder keys:**
+
+- `<ACTION_FIELD>` = verified action/result field such as `ALLOW`, `DENY`, `DROP`, `REJECT`, `SUCCESS`, or `FAILED`
+- `<METHOD_FIELD>` = verified HTTP method field such as `GET`, `POST`, `PUT`, `DELETE`, `HEAD`, `OPTIONS`, or `TRACE`
+- `<STATUS_FIELD>` = verified numeric HTTP response/status field
+- `<VALUE>` = exact value being investigated
+
+**Real lab lesson:** A broad `grep -w "DELETE"` search returned 227 matching lines, while exact field analysis returned 223 records where the HTTP-method field was actually `DELETE`. The extra keyword occurrences were not DELETE-method requests.
+
+> **Keyword occurrence ≠ field-specific event. For large structured logs, verify the field and query that field directly before reporting a count.**
+
+> **Large-file safety: Filter and aggregate from the command line instead of loading a massive log into a GUI text editor. This reduces memory pressure and avoids unnecessary crashes while preserving the original log for verification.**
+
+
 
 ### Know When to Pivot
 
