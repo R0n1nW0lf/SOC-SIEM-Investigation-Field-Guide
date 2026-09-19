@@ -344,6 +344,39 @@ awk '{print $<FIELD>}' <LOGFILE> | sort | uniq -c | sort -nr | head
 > **Large-file safety: Filter and aggregate from the command line instead of loading a massive log into a GUI text editor. This reduces memory pressure and avoids unnecessary crashes while preserving the original log for verification.**
 
 
+#### Carve Large Logs into Smaller Working Files
+
+When a raw log is extremely large, create smaller filtered **working copies** for the part of the investigation being examined. Keep the original log unchanged.
+
+After verifying the relevant field numbers, examples include:
+
+```bash
+# HTTP-method records only
+awk '$<METHOD_FIELD>=="GET" || $<METHOD_FIELD>=="POST" || $<METHOD_FIELD>=="PUT" || $<METHOD_FIELD>=="DELETE" || $<METHOD_FIELD>=="HEAD" || $<METHOD_FIELD>=="OPTIONS" || $<METHOD_FIELD>=="TRACE" || $<METHOD_FIELD>=="CONNECT"' <LOGFILE> > HTTP-only.log
+
+# Records for one source/requesting IP
+awk '$<SRC_IP_FIELD>=="<IP>"' <LOGFILE> > HTTP-IP.log
+
+# One IP plus one exact HTTP method
+awk '$<SRC_IP_FIELD>=="<IP>" && $<METHOD_FIELD>=="DELETE"' <LOGFILE> > HTTP-IP-DELETE.log
+```
+
+Compare file sizes and record counts:
+
+```bash
+ls -lh <LOGFILE> HTTP-only.log HTTP-IP.log HTTP-IP-DELETE.log
+wc -l <LOGFILE> HTTP-only.log HTTP-IP.log HTTP-IP-DELETE.log
+```
+
+**Investigation funnel:**
+
+`Large raw log → Relevant records → Relevant IP → Relevant method/activity → Smaller working evidence set`
+
+The filtered files are investigation aids, not replacements for the source evidence. Preserve the original log unchanged and verify important findings against it before reporting.
+
+> **Carve the haystack; preserve the haystack.**
+
+
 
 ### Know When to Pivot
 
