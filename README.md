@@ -559,6 +559,22 @@ URL encoding or character-building functions can hide the readable form of a req
 
 ## Firewall Traffic Log Quick Reference
 
+### Firewall / Security Control Type Memory Reference
+
+Use the name of the control as a quick clue for what kind of traffic or evidence it primarily examines.
+
+| Type | Memory Hook | Primary Focus |
+| --- | --- | --- |
+| **WAF — Web Application Firewall** | **WAF = WEB** | HTTP/HTTPS web-application traffic such as methods, URLs/URIs, parameters, headers, status codes, SQLi, XSS, and other web attacks |
+| **Network Firewall** | **Firewall = network traffic control** | Source/destination IPs, ports, protocols, interfaces, connection state, and allow/deny/drop/reject decisions |
+| **NGFW — Next-Generation Firewall** | **NGFW = network + application awareness** | Traditional firewall traffic plus application identification and additional security inspection depending on the product |
+| **IDS — Intrusion Detection System** | **IDS = Detect + Alert** | Detects suspicious network activity and alerts; normally does not prevent the traffic itself |
+| **IPS — Intrusion Prevention System** | **IPS = Detect + Prevent** | Detects suspicious network activity and can block/drop/prevent matching traffic |
+
+**Quick memory:** `WAF → WEB | Firewall → Network | NGFW → Network + Application | IDS → Detect | IPS → Prevent`
+
+These are general memory hooks. Exact capabilities, inspection depth, and actions depend on the product and configuration.
+
 For SOC investigations, the most critical firewall logs are generally the traffic logs that record communications passing through the firewall.
 
 ### Key Firewall Log Fields
