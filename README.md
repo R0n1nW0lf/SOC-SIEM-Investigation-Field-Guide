@@ -792,6 +792,21 @@ A successful authentication after repeated failures is especially important beca
 VPN routing, split tunneling, NAT, and vendor configuration can affect which address appears in downstream logs, so verify the environment rather than assuming every event will expose the tunnel IP.
 
 
+## SIEM EPS Quick Reference
+
+**EPS = Events Per Second** — the number of log/events a SIEM receives or processes each second.
+
+When a log rate is given per minute:
+
+`Events per minute ÷ 60 = EPS`
+
+Example:
+
+`150,000 logs per minute ÷ 60 = 2,500 EPS`
+
+**Memory reference:** `Logs/min ÷ 60 → EPS`
+
+
 ## Purpose
 
 This repository is part of my cybersecurity portfolio and demonstrates how I organize and apply SOC investigation concepts during authorized training and lab environments.
