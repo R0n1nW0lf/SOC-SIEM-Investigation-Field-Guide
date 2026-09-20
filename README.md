@@ -792,6 +792,81 @@ A successful authentication after repeated failures is especially important beca
 VPN routing, split tunneling, NAT, and vendor configuration can affect which address appears in downstream logs, so verify the environment rather than assuming every event will expose the tunnel IP.
 
 
+## SIEM Log Collection, Parsing, and Correlation Quick Reference
+
+### Collection Methods
+
+| Method | Quick Reference |
+| --- | --- |
+| Agent-based | Software on the source collects/forwards logs and may parse, buffer, encrypt, or check integrity |
+| Agentless | Collects remotely without a local agent; may use methods such as SSH or WMI |
+| Script/custom collection | Useful when an existing collector cannot retrieve a required log source |
+| Syslog | Common log-transport method; can use UDP or TCP and may support TLS depending on implementation |
+
+**Memory reference:** `Agent → local collector | Agentless → remote collection | Script → custom collection | Syslog → transport`
+
+Examples from training include **Splunk Universal Forwarder** and **ArcSight Connectors**.
+
+> **Visibility rule: If the SIEM never receives the log source, the analyst cannot rely on the SIEM to detect or correlate activity from that missing telemetry. When expected evidence is absent, verify that the source is actually being collected.**
+
+### Aggregation, Parsing, and Enrichment
+
+- **Aggregation** → bring logs from multiple sources into a central location/SIEM.
+- **Parsing** → break raw log data into meaningful fields such as timestamp, source IP, destination IP, port, user, action, or status.
+- **Filtering** → retain or surface the records needed for the use case.
+- **Enrichment** → add useful context such as geolocation or DNS/reverse-DNS information.
+
+**Workflow:** `Collect → Aggregate → Parse → Normalize/Enrich → Index → Correlate/Search → Analyst Review`
+
+### Preserve Original Time — Normalize a Working View
+
+Different log sources may use different date formats or time zones. Normalizing timestamps can make cross-source timeline correlation easier, but preserve the original evidence.
+
+Example working representation:
+
+`Original: 2026-09-19 23:30 UTC → Analyst view: 2026-09-19 19:30 EDT`
+
+> **Analyst rule: Modify the working/normalized view, not the raw evidence. Preserve the original timestamp and timezone so converted values can always be verified.**
+
+### Indexing and Search
+
+Indexing is important because it allows stored SIEM data to be searched and retrieved efficiently. With large log volumes, **search speed** directly affects how quickly an analyst can pivot through evidence.
+
+**Memory reference:** `Index → faster search/retrieval`
+
+### Long-Tail Analysis
+
+Long-tail analysis gives attention to **rare or least-common events** because unusual activity can be hidden among large volumes of normal repetitive events.
+
+Rare does **not** automatically mean malicious.
+
+**Analyst rule:** `Rare event → higher investigation interest → correlate context → determine meaning`
+
+### Correlation Example — Brute Force
+
+A correlation pattern such as:
+
+`Same source IP → 15 failed logins → 1 minute`
+
+is consistent with brute-force/password-guessing behavior and should be investigated.
+
+The rule identifies a behavior pattern; it does not by itself prove compromise. If a successful login follows the failures, pivot into the resulting session and correlate subsequent activity.
+
+### Hash Blacklist Limitation
+
+A file hash identifies file content, not its filename. Renaming or copying a file does not normally change its hash, while modifying the file contents does.
+
+**Memory reference:** `Rename/copy ≠ new hash | Content modification → new hash`
+
+Hash blacklists are therefore useful for known files but should not be the only detection method.
+
+### Whitelist / Allowlist Concept
+
+An allowlist permits only explicitly approved items. This can provide strong control but can require significant maintenance as legitimate systems, software, and business requirements change.
+
+**Memory reference:** `Allowlist → known good allowed → effective control, higher management effort`
+
+
 ## SIEM EPS Quick Reference
 
 **EPS = Events Per Second** — the number of log/events a SIEM receives or processes each second.
