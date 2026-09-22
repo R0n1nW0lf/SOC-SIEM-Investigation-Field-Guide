@@ -943,6 +943,104 @@ For uploaded data, review how Splunk interprets the source when a preview is ava
 
 **Workflow:** `Source → Ingest → Index → Search → Verify`
 
+
+### Connect a Remote Client / Host with Splunk Universal Forwarder
+
+Use this when a remote Windows/Linux client needs to send its logs to the central Splunk server.
+
+**Simple flow:**
+
+`Remote client → Splunk Universal Forwarder → TCP 9997 → Splunk server/indexer → Index → Search`
+
+#### 1. Prepare the Splunk server to receive forwarded logs
+
+On the Splunk server:
+
+**Settings → Forwarding and receiving → Configure receiving → New Receiving Port**
+
+Add:
+
+`9997`
+
+Port `9997/TCP` is the common Splunk receiving port used by Universal Forwarders. Make sure the network/firewall permits the client to reach the Splunk server on this port.
+
+#### 2. Install Splunk Universal Forwarder on the client
+
+Install the **Splunk Universal Forwarder** on the remote system whose logs you want to collect.
+
+The forwarder is the lightweight client component that watches the configured log sources and sends their events to Splunk.
+
+#### 3. Point the client at the Splunk server
+
+Configure the forwarder to send data to:
+
+`<SPLUNK_SERVER_IP_OR_HOSTNAME>:9997`
+
+Example concept:
+
+`Windows-PC → 192.168.1.50:9997 → Splunk`
+
+Use the real IP address or resolvable hostname of the Splunk server in the environment.
+
+#### 4. Select what the client should send
+
+Configure the desired inputs on the forwarder, such as:
+
+- Windows Event Logs
+- Security events
+- System events
+- Application events
+- Linux/system logs
+- Specific files or directories
+
+Only collect sources required for the monitoring/investigation use case.
+
+#### 5. Choose the destination index
+
+Send the events to the intended Splunk index. A dedicated index can make client telemetry easier to organize and search.
+
+Example:
+
+`winlog_clients`
+
+#### 6. Start the forwarder and verify ingestion
+
+After configuration, start/restart the Universal Forwarder as needed and give Splunk a short time to receive events.
+
+Then verify the data in **Search & Reporting**.
+
+Useful searches:
+
+```spl
+index="winlog_clients"
+```
+
+```spl
+index="winlog_clients" host="<CLIENT_HOSTNAME>"
+```
+
+You can also pivot using:
+
+`host | source | sourcetype | index`
+
+#### Troubleshooting checklist
+
+If the client does not appear:
+
+1. Confirm the Universal Forwarder service is running on the client.
+2. Confirm the forwarder is pointed to the correct Splunk server IP/hostname and port.
+3. Confirm Splunk is listening for forwarded data on `9997`.
+4. Confirm TCP `9997` is allowed through the relevant host/network firewall.
+5. Confirm the desired log/input is configured for collection.
+6. Confirm the events are going to the index you are searching.
+7. Expand the Splunk search time range if necessary.
+8. Check Splunk health/ingestion status for collection problems.
+
+**Important distinction:** Port `9997` carries forwarded log/event data. It does **not** provide remote desktop or interactive control of the client.
+
+**Memory reference:** `Client logs → Forwarder → 9997 → Splunk index → SPL search`
+
+
 ### SPL Search Basics
 
 Useful search rules from hands-on training:
