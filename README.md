@@ -867,6 +867,20 @@ An allowlist permits only explicitly approved items. This can provide strong con
 **Memory reference:** `Allowlist → known good allowed → effective control, higher management effort`
 
 
+
+## Splunk Default Ports Quick Reference
+
+| Port | Purpose | Memory Hook |
+| --- | --- | --- |
+| `9997` | Splunk forwarder sends log/event data to the Splunk indexer | **Data in** |
+| `8000` | Splunk Web / Search interface used by analysts and clients | **Analyst in** |
+| `8089` | Splunk management/API port; also used for deployment-server communication | **Management** |
+
+**Memory reference:** `9997 = data in | 8000 = analyst in | 8089 = management`
+
+When troubleshooting Splunk connectivity, identify which component is communicating and verify the corresponding firewall/network access rather than treating all Splunk ports as interchangeable.
+
+
 ## SIEM EPS Quick Reference
 
 **EPS = Events Per Second** — the number of log/events a SIEM receives or processes each second.
