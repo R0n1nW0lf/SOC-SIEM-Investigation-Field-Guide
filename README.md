@@ -881,6 +881,54 @@ An allowlist permits only explicitly approved items. This can provide strong con
 When troubleshooting Splunk connectivity, identify which component is communicating and verify the corresponding firewall/network access rather than treating all Splunk ports as interchangeable.
 
 
+
+### How Splunk Works — SOC Mental Model
+
+Think of Splunk as a centralized log collector, organizer, indexer, and search platform for machine data.
+
+**Core flow:**
+
+`Devices → Logs → Splunk → Parse/Index → Search/Correlate → Alert → Analyst Investigation`
+
+Systems such as Windows, Linux, firewalls, VPNs, web servers, IDS/IPS, EDR, and applications generate events. Splunk collects that telemetry and makes it searchable so analysts do not have to manually inspect separate log files one at a time.
+
+#### Collection and Indexing
+
+A common collection method is the **Splunk Universal Forwarder**, which sends log/event data from a system to Splunk. Port `9997` is commonly used for forwarder-to-indexer data ingestion.
+
+Splunk processes incoming events and indexes them for efficient searching. Depending on the source and configuration, useful fields may include:
+
+`_time`, `src_ip`, `dest_ip`, `user`, `action`, `status`, `port`, `host`, `source`, and `sourcetype`.
+
+**Memory reference:** `Collect → Parse → Index → Search`
+
+#### Search and Investigation
+
+Analysts commonly access Splunk Web through port `8000` and use **SPL — Search Processing Language** to search and analyze indexed events.
+
+Example investigation concept:
+
+`Repeated failures → Same source IP → Same user → Successful login → Investigate resulting session`
+
+Splunk allows an analyst to pivot across available telemetry, for example:
+
+`Suspicious IP → Authentication logs → VPN logs → Firewall logs → Web logs → Endpoint events`
+
+This centralization makes correlation easier than manually opening and comparing separate logs from each source.
+
+#### Correlation and Alerts
+
+Splunk searches and detection logic can identify patterns such as repeated failed logins from the same source within a short period and generate an alert for investigation.
+
+An alert is **not automatically proof of compromise**. It identifies activity that deserves investigation. The analyst still determines whether the event is a true positive, false positive, successful attack, failed attempt, or expected activity by reviewing and correlating the evidence.
+
+**SOC mental model:**
+
+`Splunk finds, organizes, searches, and correlates the evidence → Analyst determines what the evidence means`
+
+**Port memory:** `9997 = data in | 8000 = analyst in | 8089 = management`
+
+
 ## SIEM EPS Quick Reference
 
 **EPS = Events Per Second** — the number of log/events a SIEM receives or processes each second.
