@@ -929,6 +929,178 @@ An alert is **not automatically proof of compromise**. It identifies activity th
 **Port memory:** `9997 = data in | 8000 = analyst in | 8089 = management`
 
 
+
+## Splunk Hands-On Quick Reference
+
+### Data Ingestion
+
+Splunk can receive data in different ways:
+
+- **Forwarded data** → a Splunk Universal Forwarder sends configured logs to Splunk. Port `9997` is commonly used for receiving forwarded events.
+- **Uploaded data** → an existing log or archive can be uploaded through **Settings → Add Data → Upload**.
+
+For uploaded data, review how Splunk interprets the source when a preview is available, choose the host/index settings needed for the lab or environment, ingest the data, and then verify that events are searchable.
+
+**Workflow:** `Source → Ingest → Index → Search → Verify`
+
+### SPL Search Basics
+
+Useful search rules from hands-on training:
+
+- Field names are case-sensitive.
+- Field values are not case-sensitive.
+- `*` is a wildcard.
+- `AND`, `OR`, and `NOT` can combine or exclude conditions.
+- Select the correct time range before investigating.
+- Use the timeline to see when events occurred.
+- Use fields and **Top Values** to quickly summarize the current result set.
+- Search History can be used to return to earlier searches.
+
+Examples:
+
+```spl
+Username=Je*
+```
+
+```spl
+eventid=4624 AND computername=computer1
+```
+
+```spl
+eventid=4624 NOT computername=domaincontroller
+```
+
+### Event Count vs. Unique Values
+
+Do not confuse the number of matching events with the number of different values.
+
+Example:
+
+`82 matching requests → 65 unique client IPs`
+
+When a question asks for **different** or **unique** IPs, users, paths, ports, domains, or other values, inspect the relevant field rather than reporting the event count.
+
+**Memory reference:** `Event count ≠ unique value count`
+
+### Finding the Most Common Value
+
+After filtering to the activity of interest, inspect the relevant field's **Top Values** to see which value occurs most often.
+
+Example workflow:
+
+`Filter one client IP → Open uri_path → Top Values → Compare counts`
+
+This is faster and safer than manually counting raw events.
+
+### Reports
+
+A Splunk report is a **saved search** that can be run when needed or scheduled.
+
+**Workflow:** `SPL search → Save As → Report → Run manually or schedule`
+
+A scheduled report can run at a defined time and over a defined time range. Trigger actions may include options such as email, scripts, mobile notifications, or webhooks depending on configuration.
+
+**Memory reference:** `Report = reusable saved search/results`
+
+### Alerts
+
+An alert is a saved search that **triggers when configured conditions are met**. Alerts can be scheduled or real-time.
+
+An alert can evaluate conditions such as:
+
+`Number of Results > threshold`
+
+It can then perform a configured trigger action.
+
+**Workflow:** `Search → Condition → Alert triggers → Action`
+
+Real-time alerts should be used carefully because continuous evaluation can increase Splunk server load.
+
+**Memory reference:** `Alert = saved search + trigger condition + action`
+
+### Dashboards
+
+A dashboard combines useful searches and visualizations into panels so analysts can monitor information in one place.
+
+Example:
+
+```text
+SOC Dashboard
+├── Failed Login Count
+├── Top Client IPs
+├── Top Requested Paths
+├── HTTP Status Codes
+└── Events Over Time
+```
+
+Splunk Dashboard Studio can use layouts such as **Grid** or **Absolute**.
+
+**Memory reference:** `Dashboard = multiple useful panels in one view`
+
+### Splunk Health Status
+
+Splunk provides a **Health Status of Splunkd** view for checking whether Splunk itself is functioning correctly.
+
+Health signals may cover areas such as:
+
+- File monitoring
+- Ingestion latency
+- Index processing
+- Disk space
+- Resource usage
+- Search lag
+- Delayed or skipped searches
+
+Status indicators:
+
+- **Green** → functioning properly
+- **Yellow** → a problem exists and should be reviewed
+- **Red** → severe issue affecting functionality
+- **Grey** → health reporting is disabled for that feature
+
+**Analyst rule:** Before trusting missing telemetry, verify that the monitoring/collection system itself is healthy.
+
+### Splunk Users, Roles, and Password Management
+
+Splunk uses **role-based access control (RBAC)**.
+
+`User → Role → Permissions → Data/features the user can access`
+
+Roles can control what a user can see, search, and manage. Every user must have a role.
+
+For administration:
+
+- Avoid using the built-in `admin` account for normal daily work when the environment allows separate administrative accounts.
+- Use **Settings → Users** to manage users.
+- Use **Settings → Roles** to manage roles and permissions.
+- Use **Settings → Password Management** to configure password and login policies.
+
+Password/login controls can include:
+
+- Minimum password length
+- Required numeric, lowercase, uppercase, and special characters
+- Password expiration
+- Password history
+- Forced password changes
+- Failed-login thresholds
+- Account lockout duration
+
+**Security reminder:** Splunk is a security-sensitive system and should be hardened and monitored just like the systems whose logs it collects.
+
+### Splunk + EDR
+
+Splunk and EDR complement each other:
+
+- **EDR** → deep endpoint visibility and endpoint response.
+- **Splunk/SIEM** → centralized collection, search, and correlation across many data sources.
+
+A useful correlation model is:
+
+`EDR endpoint activity + Windows logs + Firewall + DNS + VPN + Authentication → Splunk correlation → Analyst investigation`
+
+**Memory reference:** `EDR = endpoint depth | Splunk = centralized correlation`
+
+
 ## SIEM EPS Quick Reference
 
 **EPS = Events Per Second** — the number of log/events a SIEM receives or processes each second.
