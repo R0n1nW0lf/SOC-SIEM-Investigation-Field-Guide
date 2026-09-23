@@ -1229,3 +1229,211 @@ This field guide is a living document.
 I will continue adding new investigation techniques, attack patterns, indicators, search methods, and lessons learned as I progress through additional SOC labs and hands-on cybersecurity investigations.
 
 The goal is to continuously improve this guide based on practical experience rather than treat it as a finished reference.
+
+
+---
+
+## Cyber Threat Intelligence (CTI) Quick Reference — Session Notes
+
+### CTI Lifecycle
+
+**Lifecycle:** `Planning & Direction → Information Gathering → Processing → Analysis & Production → Dissemination & Feedback`
+
+- **Planning & Direction** → determine who needs the intelligence, what needs to be protected, the scope, and the questions intelligence should answer.
+- **Information Gathering** → collect raw information from many relevant sources.
+- **Processing** → clean, filter, correlate, classify, and reduce false positives.
+- **Analysis & Production** → interpret the processed information and turn it into useful intelligence for the intended consumer.
+- **Dissemination & Feedback** → deliver the intelligence to the appropriate people and use feedback to improve future intelligence.
+
+**Memory reference:** `Need → Collect → Clean → Analyze → Deliver → Improve`
+
+### Types of Threat Intelligence
+
+| Type | Primary Focus | Quick Memory |
+| --- | --- | --- |
+| Technical CTI | IOCs such as malicious IPs, domains, hashes, files, and C2 indicators | **WHAT indicators** |
+| Tactical CTI | Attacker tactics, techniques, and procedures (TTPs) | **HOW they operate** |
+| Operational CTI | Narrower intelligence used for threat hunting, specific attacks, or specific threat actors | **HUNT for them** |
+| Strategic CTI | Long-term planning, budgeting, purchasing, and executive-level decisions | **PLAN ahead** |
+
+A Level 1 SOC analyst commonly consumes **Technical CTI**, while threat-hunting work commonly uses **Operational CTI**.
+
+### IOC — Indicator of Compromise
+
+An **IOC** is data that can help identify malicious activity, a threat actor, malicious infrastructure, or a malicious file.
+
+Common examples:
+
+- IP addresses
+- Domains and URLs
+- File hashes
+- Malicious files
+- C2 infrastructure
+
+**Analyst rule:** An IOC is an indicator to investigate and correlate. Do not treat a single indicator or feed result as automatic proof of compromise.
+
+### Attack Surface Discovery
+
+An attack surface is the collection of externally exposed assets that may need to be identified, verified, inventoried, and monitored.
+
+Potential assets include:
+
+- Domains and subdomains
+- Websites and login pages
+- CMS applications and website technologies
+- IP addresses and IP blocks
+- DNS records
+- Public-facing network applications and operating systems
+- SSL certificates
+- Executive/C-level email exposure
+- BIN/SWIFT information for financial-sector use cases
+
+**Core workflow:** `Discover → Verify → Inventory → Monitor`
+
+> **Discovery does not equal ownership. Treat discovered assets as leads until ownership or relevance is verified.**
+
+### Attack Surface Tool Reference
+
+| Tool | CTI / Attack-Surface Use |
+| --- | --- |
+| ViewDNS.info | DNS investigation and Reverse WHOIS discovery |
+| Whoxy | Reverse WHOIS and related domain discovery |
+| Sublist3r | Subdomain discovery from multiple sources |
+| Aquatone | Subdomain discovery and web-asset investigation |
+| Assetfinder | Discover potential subdomains from multiple sources |
+| httpx | Probe discovered domains/subdomains for responding HTTP/HTTPS services |
+| httprobe | Alternative HTTP/HTTPS probing tool |
+| Wappalyzer | Website technology/CMS identification |
+| WhatRuns | Website technology identification |
+| BuiltWith | Website technology identification |
+| WhatCMS | CMS identification |
+| Shodan | Search internet-exposed systems, ports, services, and infrastructure |
+| Censys | Internet infrastructure and certificate discovery |
+| crt.sh | SSL/TLS certificate transparency lookup |
+
+**Web discovery workflow:** `Domains/Subdomains → Probe HTTP/HTTPS → Identify active websites → Detect technologies → Verify → Inventory`
+
+### Shodan Quick Reference
+
+Shodan is a search engine for internet-exposed systems and services.
+
+Organization filter:
+
+`org:"Organization Name"`
+
+**Memory reference:** `org: = organization`
+
+Shodan can help identify exposed infrastructure, ports, services, and technology clues. Findings still require verification before they are added to an organization's asset inventory.
+
+Alternatives covered in training include **BinaryEdge, ZoomEye, and Censys**.
+
+### Website Technology and Source Inspection
+
+Website technologies may be identified with tools such as Wappalyzer, WhatRuns, BuiltWith, and WhatCMS.
+
+Manual investigation can also inspect:
+
+- HTML source
+- Script tags and external script sources
+- CMS/theme/plugin paths
+- Technology/version clues
+- HTTP response headers
+
+**Analyst rule:** Technology detection produces evidence and clues. Verify the finding rather than assuming every detected component is current or organization-owned.
+
+### SSL/TLS Certificate Discovery
+
+SSL/TLS certificates are useful attack-surface assets and can also provide clues about related infrastructure.
+
+**Workflow:** `Domain → Certificate discovery → Censys / crt.sh → Verify → Asset inventory`
+
+### Financial-Sector Asset Intelligence
+
+BIN and SWIFT information can be relevant to financial-sector fraud intelligence.
+
+**Memory reference:** `BIN/SWIFT → financial-sector asset intelligence → fraud monitoring`
+
+### Gathering Threat Intelligence
+
+Threat intelligence should be gathered from a **wide range of relevant sources**. More sources can improve visibility, but poor-quality sources can also increase false positives.
+
+Sources covered in training include:
+
+- Shodan and internet-exposure search engines
+- IOC feeds and malware-analysis sources
+- Public research and security blogs
+- Code repositories
+- Ransomware reporting/blog sources
+- Public buckets
+- Honeypots
+- SIEM, IDS/IPS, and firewall telemetry
+- Publicly available infrastructure and exposure data
+
+Examples of IOC sources covered in training include AlienVault, MalwareBazaar, Abuse.ch, VirusTotal, Hybrid Analysis, URLScan, Spamhaus, and sandbox/intelligence services.
+
+**Collection principle:** `More sources → broader visibility → filter/verify → reduce false positives`
+
+### Code Repository Intelligence
+
+Public code repositories can accidentally expose:
+
+- Credentials
+- API keys
+- Configuration files
+- Database access information
+- Other sensitive information
+
+Repositories can also provide information about newly published vulnerabilities and related research.
+
+**Analyst rule:** A search result is a lead. Verify ownership, context, exposure, and relevance before reporting it.
+
+### Honeypots
+
+A honeypot is a decoy system designed to attract attacker activity so defenders can observe and collect intelligence.
+
+Potential evidence includes:
+
+- Attacker IP addresses
+- Exploitation attempts
+- Commands
+- Behavior patterns
+- TTPs
+
+**Memory reference:** `Bait → Observe → Collect → Correlate`
+
+### Internal Security Telemetry as CTI
+
+Do not overlook the organization's own security telemetry.
+
+Useful sources include:
+
+- SIEM
+- IDS/IPS
+- Firewalls
+- Endpoint/security-product logs
+
+These sources may reveal attacker IPs, malicious hashes, repeated attack patterns, and other indicators that can become useful intelligence.
+
+**Workflow:** `Security telemetry → Extract indicators → Correlate → Verify → Intelligence`
+
+### Threat Intelligence Data Interpretation
+
+Raw threat data collected from multiple sources can be large, duplicated, noisy, outdated, or incorrect. It must be processed before it becomes useful intelligence.
+
+A legitimate IP, domain, URL, or file hash incorrectly placed in a malicious feed can create false positives and disrupt legitimate activity.
+
+**Processing workflow:**
+
+`Collect → Classify/Label → Identify known-good data → Filter/Clean → Correlate with attack surface → Interpret → Intelligence`
+
+Known legitimate indicators can be used as allowlist/whitelist data to help remove false positives from intelligence processing.
+
+> **Feed result ≠ confirmed threat. Clean the data, correlate it, verify the evidence, then determine what it means.**
+
+### CTI Analyst Mindset
+
+A useful investigation model from this training is:
+
+`Something suspicious → Question it → Gather evidence → Correlate → Investigate → Verify → Supported conclusion`
+
+The goal is not to automate analyst judgment. Tools and intelligence feeds reduce the search space and surface evidence; the analyst determines what the evidence means.
