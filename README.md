@@ -1274,7 +1274,7 @@ Common examples:
 
 ### Attack Surface Discovery
 
-An attack surface includes the points where an attacker could interact with or gain access to a system. This section focuses on the **external attack surface**: externally exposed assets that need to be identified, verified, inventoried, and monitored.
+An attack surface is the collection of externally exposed assets that may need to be identified, verified, inventoried, and monitored.
 
 Potential assets include:
 
@@ -1426,7 +1426,7 @@ A legitimate IP, domain, URL, or file hash incorrectly placed in a malicious fee
 
 `Collect → Classify/Label → Identify known-good data → Filter/Clean → Correlate with attack surface → Interpret → Intelligence`
 
-Known legitimate indicators can be used as scoped allowlist/whitelist data to help remove false positives from intelligence processing. Record the reason, owner, scope, and review date; reassess exceptions when evidence changes. A legitimate domain, shared IP, or signed application can still be compromised or abused, so an allowlist must not suppress contradictory behavioral evidence.
+Known legitimate indicators can be used as allowlist/whitelist data to help remove false positives from intelligence processing.
 
 > **Feed result ≠ confirmed threat. Clean the data, correlate it, verify the evidence, then determine what it means.**
 
@@ -1437,82 +1437,3 @@ A useful investigation model from this training is:
 `Something suspicious → Question it → Gather evidence → Correlate → Investigate → Verify → Supported conclusion`
 
 The goal is not to automate analyst judgment. Tools and intelligence feeds reduce the search space and surface evidence; the analyst determines what the evidence means.
-
-
-### Using Threat Intelligence — EASM, DRP, and CTI
-
-Continuation of the existing CTI notes, based on the LetsDefend **Using Threat Intelligence** lesson. These are reference notes from reviewing the material, not a claim that the learner has completed the lesson or its exercises.
-
-In this course, **Extended Threat Intelligence (XTI)** brings together three areas:
-
-| Area | Main purpose | Memory reference |
-| --- | --- | --- |
-| External Attack Surface Management (EASM) | Discover and monitor externally exposed assets, configuration changes, and vulnerabilities | What do we expose? |
-| Digital Risk Protection (DRP) | Monitor brand impersonation, fraud, leaked data/credentials, and external threats affecting the organization | How are we being exposed or impersonated? |
-| Cyber Threat Intelligence (CTI) | Understand malicious campaigns, threat actors, ransomware activity, and relevant indicators | What threats should we investigate? |
-
-This is the course's organizing model; these capabilities overlap in practice.
-
-**Action chain:** `Intelligence → Match to verified assets → Validate evidence → Prioritize → Investigate/respond → Verify remediation`
-
-#### EASM Alert Reference
-
-Keep asset ownership and the inventory current as domains are acquired, retired, or changed. External feeds such as Shodan provide leads that must be checked against current exposure and internal records.
-
-| Alert | Investigation and response |
-| --- | --- |
-| New digital asset | Verify ownership and authorized creation before adding it to the monitored inventory. |
-| Domain information change | Compare old/new WHOIS or registration details with authorized changes and the responsible owner. |
-| DNS information change | Compare DNS records, change history, and approved work; investigate unexpected destinations. |
-| DNS zone transfer | Verify whether transfers are exposed and whether the requesting systems are authorized. Zone transfers between authorized DNS servers are not automatically malicious. |
-| Internal IP address disclosed | Check public DNS records and intended architecture with the DNS owner; investigate unintended disclosure. |
-| Critical open port | Confirm the service is currently exposed and needed. Coordinate closing/filtering unnecessary services; patch and configure required services. |
-| SMTP open relay | Confirm relay behavior and mail-server configuration with the owner; restrict unauthorized relaying. |
-| Missing SPF/DMARC | Verify DNS records and mail-authentication configuration with the mail owner. Missing records indicate a configuration gap, not proof that a spoofing attack succeeded. |
-| Expired/revoked TLS certificate | Verify the certificate, hostname, chain, and validity; coordinate replacement and investigate revocation as appropriate. |
-| Suspicious website redirect | Check the redirect chain, destination ownership, and approved configuration; investigate unexpected destinations and escalate supported findings. |
-| Subdomain takeover | Identify the affected DNS record and dependent service, verify the exposure, and coordinate remediation with the responsible team. |
-| Website status-code change | Compare the previous/current response and service health, identify the cause, and coordinate restoration. A changed status alone does not prove compromise. |
-| Vulnerability detected | Verify the affected asset, product/version, configuration, exposure, and applicable advisory. Prioritize remediation based on evidence and impact. |
-
-**Certificate clarification:** An expired or revoked certificate does **not** automatically make HTTPS traffic plaintext. It creates a certificate-validation/trust problem, and clients may reject the connection. TLS provides encryption separately from certificate validity checks. Repair the certificate problem instead of assuming that encryption has disappeared. See [MDN: TLS](https://developer.mozilla.org/en-US/docs/Web/Security/Defenses/Transport_Layer_Security).
-
-**Vulnerability clarification:** A CVE or external banner match is a lead, not proof that a host is exploitable or compromised. Confirm applicability, including the actual installed version and relevant configuration.
-
-#### DRP Alert Reference
-
-| Alert | Investigation and response |
-| --- | --- |
-| Potential phishing domain | Investigate lookalike domains and certificate clues in a safe environment. Confirm impersonation, preserve evidence, and coordinate registrar/hosting takedown when justified; monitor unresolved leads. |
-| Rogue mobile application | Compare the application with the legitimate app, examine its behavior safely, and coordinate response/takedown if malicious impersonation is confirmed. |
-| IP reputation / blocklist | Identify the listing source, reason, timestamp, affected service, and IP ownership at that time. Correlate internal telemetry, remediate the cause, then request correction/delisting as appropriate. |
-| Impersonating social-media account | Distinguish similar names from actual impersonation or fraud; preserve evidence and report verified abuse through the platform process. |
-| Botnet listing on a criminal market | Validate the report and map it to an endpoint/account. Correlate EDR evidence; coordinate containment, credential response, and investigation through the incident-response process. |
-| Organization mentioned on deep/dark web | Assess context, source credibility, timing, and specific claims before deciding whether it represents a threat. |
-| Organization mentioned on messaging platforms | Analyze the actual discussion and supporting evidence; a mention alone does not establish an attack. |
-| Stolen payment-card data | Route verified exposure through the authorized fraud team and card-response process. |
-| Repository or public-storage data leak | Verify ownership and exposure; preserve necessary evidence, restrict exposure, and revoke/rotate compromised secrets. Coordinate removal with the owner. |
-| Organization referenced in a malware-analysis report | Investigate the sample/report and why the organization appears; correlate the finding with internal telemetry before concluding that an endpoint is infected. |
-| Employee/VIP credentials exposed | Validate affected accounts and timing, then coordinate password/secret rotation, session revocation where applicable, and investigation of account use. |
-
-**IP reputation rule:** A blocklist entry alone does not justify blindly disabling an IP or declaring a breach. Shared hosting, NAT, reassignment, stale reports, and legitimate activity can affect interpretation.
-
-**Secret-exposure rule:** Deleting the visible file is not enough to invalidate a leaked key or password. Revoke/rotate exposed secrets and investigate their use; address retained copies/history through the approved response process. See [OWASP: Secrets Management](https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html).
-
-#### CTI with Internal Telemetry
-
-Use external campaign, actor, and IOC intelligence together with the organization's own evidence.
-
-`External CTI + Asset inventory + SIEM/EDR/DNS/firewall/authentication evidence → Context → Supported decision`
-
-- **SIEM:** correlate indicators with events, time ranges, hosts, users, and network activity.
-- **EDR:** identify the endpoint, process tree, file/hash evidence, and observed behavior.
-- **SOAR:** carry out approved enrichment and response workflows with appropriate checks.
-
-For a hash-based endpoint investigation:
-
-`Reported hash → Search endpoint/file telemetry → Verify matching event and timestamp → Identify hostname → Correlate behavior → Decide response`
-
-Record indicator type/value, source, first/last seen times, affected asset, supporting evidence, confidence, impact, action owner, and verification result. Avoid treating a match as proof that malicious execution occurred.
-
-**Study checkpoint:** Continue with **Using Threat Intelligence**. Its questions and endpoint exercise remain pending; the next lesson is **Threat Intelligence and SOC Integration**.
