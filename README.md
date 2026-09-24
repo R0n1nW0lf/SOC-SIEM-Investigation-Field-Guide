@@ -1,3 +1,5 @@
+<a id="top"></a>
+
 # SOC/SIEM Investigation Field Guide
 
 A practical SOC/SIEM investigation field guide developed from hands-on security labs and investigation exercises.
