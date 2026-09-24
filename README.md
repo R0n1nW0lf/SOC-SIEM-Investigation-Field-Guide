@@ -1437,3 +1437,188 @@ A useful investigation model from this training is:
 `Something suspicious → Question it → Gather evidence → Correlate → Investigate → Verify → Supported conclusion`
 
 The goal is not to automate analyst judgment. Tools and intelligence feeds reduce the search space and surface evidence; the analyst determines what the evidence means.
+---
+
+## Extended Threat Intelligence (XTI) — EASM, DRP, and SOC Integration
+
+After collected data is interpreted in relation to the organization's attack surface, the training groups its use into three areas:
+
+1. **External Attack Surface Management (EASM)**
+2. **Digital Risk Protection (DRP)**
+3. **Cyber Threat Intelligence (CTI)**
+
+Together, these form the **XTI** structure used in the training.
+
+**Memory reference:** `EASM = exposed assets | DRP = digital/brand/people risk | CTI = broader threat picture`
+
+### External Attack Surface Management (EASM)
+
+EASM focuses on the organization's outward-facing assets. Unknown, forgotten, newly created, changed, vulnerable, or misconfigured assets need to be identified, verified, inventoried, and continuously monitored.
+
+**Core workflow:** `Discover → Verify ownership → Inventory → Monitor → Investigate changes`
+
+Alerts covered under EASM include:
+
+- New Digital Asset(s) Detected
+- Domain Information Change Detected
+- DNS Information Change Detected
+- DNS Zone Transfer Detected
+- Internal IP Address Detected
+- Critical Open Port Detected
+- SMTP Open Relay Detected
+- SPF/DMARC Record Not Found
+- SSL Certificate Revoked/Expired
+- Suspicious Website Redirection
+- Subdomain Takeover Detected
+- Website Status Code Changed
+- Vulnerability Detected
+
+**Important distinction:** In this training, **DNS Zone Transfer Detected**, **Website Status Code Changed**, **Subdomain Takeover Detected**, and **Vulnerability Detected** are EASM alerts.
+
+### Digital Risk Protection (DRP)
+
+DRP maps collected intelligence to risks involving the organization beyond basic asset exposure. The training covers brand reputation, Deep & Dark Web threats, fraud, supply-chain risk, web-surface threats, senior executives, leaked credentials, and related digital risks.
+
+Alerts covered under DRP include:
+
+- Potential Phishing Domain Detected
+- Rogue Mobile Application Detected
+- IP Address Reputation
+- Impersonating Social Media Account Detected
+- Botnet Detected at Black Market
+- Suspicious Content Detected at Deep & Dark Web
+- Suspicious Content Detected at IM Platforms
+- Stolen Credit Card Detected
+- Data Leak Detected on Code Repository
+- Company Related Information Detected on Malware Analysis Services
+- Employee and VIP Credential Detected
+
+**Important distinction:** In this training, **Botnet Detected at Black Market** and **Suspicious Content Detected at Deep & Dark Web** are DRP alerts, not EASM alerts.
+
+### Potential Phishing / Mimicking Domain Response
+
+When intelligence identifies a domain similar to the organization's domain:
+
+`Detect similar domain → Investigate safely → Determine whether it mimics the organization → Take action`
+
+If the domain is confirmed to mimic the organization's brand or content, the training directs the analyst to contact the domain registrar and hosting ISP/provider to pursue takedown. If the content is not currently suspicious, the similar domain should still be monitored because it may later be used for phishing.
+
+### Rogue Mobile Applications
+
+A rogue application may imitate a legitimate organization's application while being unauthorized or malicious.
+
+**Analyst workflow:** `Detect similar application → Analyze safely → Verify whether it is malicious/impersonating → Remediate or pursue takedown`
+
+### Botnet Detection at Black Markets
+
+If an organization's domain or IP appears in botnet data from black markets, determine whether the affected system belongs to a customer or employee.
+
+- **Customer system** → reset the user's password.
+- **Employee system** → conduct forensic investigation, isolate the system from the network, reset network credentials, and investigate whether the system is infected.
+
+### Deep & Dark Web / IM Monitoring
+
+Threat intelligence can monitor mentions of the organization across Deep & Dark Web sources and instant-messaging environments such as Telegram, ICQ, and IRC.
+
+A mention is not automatically proof of an attack. Analyze the content and context, determine whether it represents a threat, and take action based on the evidence.
+
+**Workflow:** `Mention detected → Analyze content/context → Correlate → Determine relevance → Act if necessary`
+
+### Stolen Credit Card Intelligence
+
+For financial-sector use cases, threat intelligence can identify stolen card data that matches a bank's cards.
+
+**Workflow:** `Stolen card intelligence → Match to bank/customer → Notify fraud team → Cancel card`
+
+### Data Leaks in Code Repositories and Buckets
+
+Threat intelligence may detect sensitive organizational data exposed in locations such as GitHub, Bitbucket, Azure Blob, or Amazon S3.
+
+Potential findings include:
+
+- Organization IP addresses or domains
+- Database access information
+- Employee login information
+- Sensitive reports
+- Other critical organizational data
+
+If the organization controls the repository or bucket, remove the sensitive data quickly. If it is externally controlled, pursue the appropriate takedown/remediation process.
+
+### Attack-Surface Discovery — Session Tool Reminders
+
+Subdomain discovery tools covered in the training include:
+
+- SecurityTrails
+- Aquatone
+- Sublist3r
+- Assetfinder
+
+Aquatone can collect subdomain data from multiple sources and includes modules for checking activity and possible takeover conditions.
+
+For website technology detection, the training covers tools such as Wappalyzer, WhatRuns, BuiltWith, and WhatCMS. Manual inspection can also use page source and HTTP response headers.
+
+**Browser DevTools reminder:** Use the **Network** tab to select a request/response and inspect its headers for technology clues.
+
+### C-Level Employee Email Discovery — Training Tool List
+
+The training lists these tools for detecting C-level employee email addresses:
+
+- SalesQL
+- RocketReach
+- Apollo
+- ContactOut
+
+**SecurityTrails is not in this C-level email-tool list.** In this training, SecurityTrails is used for attack-surface/subdomain discovery.
+
+### Threat Intelligence Collection Sources — Session Reminder
+
+Sources covered in the training include areas such as:
+
+- Hacker forums
+- Black markets
+- Code repositories such as GitHub
+- Ransomware blogs/reporting
+- Deep & Dark Web sources
+- Public malware sandboxes and IOC sources
+- Internet-exposure search engines
+- Honeypots
+- SIEM, IDS/IPS, and firewall telemetry
+
+**E-commerce website comments were not one of the threat-intelligence collection sources listed in this training.**
+
+### Threat Intelligence + SOC Integration
+
+Threat intelligence becomes more useful when it is integrated with the security products already operating in the SOC.
+
+The training specifically discusses integration with:
+
+- **SIEM** → centralize, search, and correlate intelligence with organizational telemetry.
+- **SOAR** → use intelligence within orchestration and response workflows.
+- **EDR** → correlate threat intelligence with endpoint activity and response.
+- **Firewalls** → use threat intelligence to help prevent known malicious inbound traffic at the network boundary.
+
+**Integration model:** `Threat Intelligence → SIEM / SOAR / EDR / Firewall → Correlate internal + external evidence → Analyst investigation`
+
+For the training quiz distinctions, tools such as **Nmap** and **Nuclei** are not the SOC threat-intelligence integration products being asked for; they serve different security-testing/discovery purposes.
+
+### Session Memory Checks
+
+- CTI lifecycle has **5 stages** in this training.
+- There are **4 types of threat intelligence**: Technical, Tactical, Operational, Strategic.
+- **EASM** is an XTI use area, not a CTI lifecycle stage.
+- **Network** is the DevTools tab used to inspect request/response headers.
+- **Aquatone** is one of the attack-surface/subdomain discovery tools covered.
+- **SecurityTrails** is not one of the listed C-level employee email-discovery extensions.
+- **Botnet Detected at Black Market** belongs to DRP.
+- **DNS Zone Transfer Detected** belongs to EASM.
+- A confirmed mimicking/phishing domain should be pursued for takedown.
+- **Firewall** is the fastest boundary-control answer in the training when the goal is preventing known malicious inbound traffic.
+
+### Analyst Mindset
+
+Threat intelligence should support investigation rather than replace analyst judgment.
+
+`Alert / Intelligence → Question it → Gather evidence → Correlate with assets and telemetry → Investigate → Verify → Supported action or conclusion`
+
+> **Intelligence narrows the search. Evidence supports the decision. The analyst verifies before reporting or acting.**
+
