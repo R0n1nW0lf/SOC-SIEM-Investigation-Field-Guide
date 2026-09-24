@@ -66,7 +66,10 @@ Sandboxing, packet analysis, and static malware analysis are useful when existin
 
 > **Continuation Notice:** This section is Part 2 of the SOC/SIEM Investigation Field Guide and continues the material contained in `SOC_SIEM_Investigation_Field_Guide.docx`. It adds new hands-on investigation techniques, lessons learned, and reference material from authorized cybersecurity labs and training.
 
-<a id="dynamic-malware"></a>\n## Dynamic Malware Analysis
+<a id="dynamic-malware"></a>
+## Dynamic Malware Analysis
+
+[↑ Back to top](#top)
 
 Dynamic malware analysis involves executing a suspicious file inside an isolated lab environment and observing its runtime behavior. The objective is to determine what the sample actually does, including process activity, file creation, Registry modification, persistence, and network communication.
 
@@ -74,7 +77,10 @@ Dynamic malware analysis involves executing a suspicious file inside an isolated
 
 `Execute → Processes → Files → Registry → Network → Persistence → C2 → Indicators`
 
-<a id="dynamic-tools"></a>\n### Dynamic Analysis Tool Reference
+<a id="dynamic-tools"></a>
+### Dynamic Analysis Tool Reference
+
+[↑ Back to top](#top)
 
 | Tool | Primary Use |
 | --- | --- |
@@ -86,7 +92,10 @@ Dynamic malware analysis involves executing a suspicious file inside an isolated
 | HashMyFiles | Generate and compare file hashes |
 | ANY.RUN | Historical or live sandbox evidence, process/network correlation, and application-layer traffic when behavior cannot be reproduced locally |
 
-<a id="procmon-dropped-files"></a>\n### Procmon — Detecting Dropped Files
+<a id="procmon-dropped-files"></a>
+### Procmon — Detecting Dropped Files
+
+[↑ Back to top](#top)
 
 Recommended capture routine:
 
@@ -107,7 +116,10 @@ Useful filters and operations include:
 
 Procmon can show file activity, but it does not calculate the file's cryptographic hash. Use a hashing tool when the investigation requires MD5, SHA-1, or SHA-256.
 
-<a id="procmon-process-tree"></a>\n### Procmon — Include the Malware Parent and Children
+<a id="procmon-process-tree"></a>
+### Procmon — Include the Malware Parent and Children
+
+[↑ Back to top](#top)
 
 Filtering only by the original malware process can cause important evidence to be missed. Malware may launch or abuse another process, including legitimate Windows binaries such as `RegSvcs.exe`. A child process may perform network communication, file activity, Registry modification, or other malicious behavior instead of the original executable.
 
@@ -128,7 +140,10 @@ Then review the filtered events for activity such as:
 
 This filter does **not guarantee** that Procmon will reveal the final answer. It is a strong clue that narrows the investigation to processes and events more likely to be related to the sample. Always correlate the results with other evidence sources.
 
-<a id="wireshark-network"></a>\n### Wireshark — Malware Network Activity
+<a id="wireshark-network"></a>
+### Wireshark — Malware Network Activity
+
+[↑ Back to top](#top)
 
 Start by identifying unusual DNS queries and correlate them with subsequent network connections.
 
@@ -174,7 +189,10 @@ A matching packet by itself is not proof that something is malicious. For exampl
 
 with no `SYN/ACK` means the connection was attempted but was not established. Do not mistake a failed connection attempt for successful communication or exfiltration.
 
-<a id="wireshark-filters"></a>\n### Wireshark Investigation Filter Cheat Sheet
+<a id="wireshark-filters"></a>
+### Wireshark Investigation Filter Cheat Sheet
+
+[↑ Back to top](#top)
 
 Large packet captures contain significant background traffic. Start broad, then narrow the capture with display filters instead of manually reading every packet.
 
@@ -230,7 +248,10 @@ Filters can be combined with `&&` for **AND**, `||` for **OR**, and `!` for **NO
 
 A useful filter reduces the haystack; it does not determine whether the remaining traffic is malicious. Always correlate network findings with process, file, Registry, endpoint, and timeline evidence.
 
-<a id="large-logs"></a>\n### Large Log Files — Filter Instead of Opening
+<a id="large-logs"></a>
+### Large Log Files — Filter Instead of Opening
+
+[↑ Back to top](#top)
 
 Very large logs can overwhelm or crash GUI text editors and lab environments. When working with a large file, avoid loading the entire log into an editor when the investigation only requires a specific field, value, or pattern. Use streaming command-line tools such as `awk`, `grep`, `sort`, `uniq`, and `less` to reduce the data first.
 
@@ -409,7 +430,10 @@ In one authorized malware-analysis exercise, the current Wireshark capture showe
 
 > **Use each tool for the evidence it can provide. If one source reaches a dead end, pivot to another source and correlate the results. Never fill missing evidence with assumptions.**
 
-<a id="tcp-flags"></a>\n### TCP Flag Quick Reference
+<a id="tcp-flags"></a>
+### TCP Flag Quick Reference
+
+[↑ Back to top](#top)
 
 The normal TCP three-way handshake is:
 
@@ -438,7 +462,10 @@ Think of the sequence as:
 
 `FIN` and `PSH` are not inherently suspicious. Interpret TCP flags in context with the source and destination hosts, ports, process, protocol, timestamps, and application behavior.
 
-<a id="regshot"></a>\n### Regshot — Registry Comparison
+<a id="regshot"></a>
+### Regshot — Registry Comparison
+
+[↑ Back to top](#top)
 
 Recommended workflow:
 
@@ -452,7 +479,10 @@ Review the comparison for:
 
 For persistence investigations, search for the dropped executable name and common startup locations such as `CurrentVersion\Run` and `CurrentVersion\RunOnce`. Correlate the Registry value with the executable it references.
 
-<a id="registry-hives"></a>\n## Windows Registry Hive Shorthand
+<a id="registry-hives"></a>
+## Windows Registry Hive Shorthand
+
+[↑ Back to top](#top)
 
 Different Windows tools may display the same Registry hive using different names. When reviewing Regshot, Procmon, Registry Editor, SIEM, or EDR evidence, translate the shorthand before comparing paths or answering a lab question.
 
@@ -500,7 +530,10 @@ Do not rely on one artifact. Correlate behavior across the available evidence.
 
 Preserve evidence before remediation or resetting the lab. Start with the evidence that directly answers the investigation question, then go deeper only when necessary.
 
-<a id="waf"></a>\n## WAF Investigation Quick Reference
+<a id="waf"></a>
+## WAF Investigation Quick Reference
+
+[↑ Back to top](#top)
 
 A Web Application Firewall (WAF) evaluates inbound HTTP/HTTPS application traffic against configured rules and can allow, block, deny, or challenge requests before they reach the web application.
 
@@ -523,7 +556,10 @@ When investigating a WAF alert, check:
 - A malicious request that was `ALLOW`ed requires deeper investigation to determine whether the application was affected.
 - Misconfigured WAF rules can cause false positives by blocking legitimate requests or false negatives by allowing malicious requests through.
 
-<a id="http-status"></a>\n### HTTP Status Code Quick Reference
+<a id="http-status"></a>
+### HTTP Status Code Quick Reference
+
+[↑ Back to top](#top)
 
 When HTTP response status is available in WAF, proxy, web-server, IDS/IPS, or SIEM evidence, highlight the status code and its category so the analyst can quickly identify how the application/server responded.
 
@@ -547,7 +583,10 @@ Common examples:
 
 > **HTTP success ≠ exploit success. HTTP failure/error ≠ automatic proof an attack was blocked by the WAF. Correlate the response code with WAF action, request content, application logs, and other evidence.**
 
-<a id="web-attack-patterns"></a>\n### Web Attack URL Pattern Quick Reference
+<a id="web-attack-patterns"></a>
+### Web Attack URL Pattern Quick Reference
+
+[↑ Back to top](#top)
 
 When reviewing WAF, proxy, web-server, IDS/IPS, or SIEM logs, inspect the requested URL/URI and parameters for attack-related patterns. These strings are investigation indicators and should be correlated with the WAF action, HTTP response, application logs, and other evidence before determining whether exploitation succeeded.
 
@@ -576,7 +615,10 @@ URL encoding or character-building functions can hide the readable form of a req
 
 > **Detection tells you where to investigate. The WAF action and correlated evidence tell you what actually happened.**
 
-<a id="firewall"></a>\n## Firewall Traffic Log Quick Reference
+<a id="firewall"></a>
+## Firewall Traffic Log Quick Reference
+
+[↑ Back to top](#top)
 
 ### Firewall / Security Control Type Memory Reference
 
@@ -699,7 +741,10 @@ Port `443` commonly carries HTTPS, but if the NGFW identifies the application as
 
 > **Port number is a clue, not proof of the application. When application-aware firewall telemetry is available, correlate the port with the identified application/protocol and the surrounding evidence.**
 
-<a id="ids-ips"></a>\n## IDS / IPS Log Analysis Quick Reference
+<a id="ids-ips"></a>
+## IDS / IPS Log Analysis Quick Reference
+
+[↑ Back to top](#top)
 
 ### IDS vs. IPS
 
@@ -748,7 +793,10 @@ A signature containing `NXDOMAIN Response` indicates a DNS response associated w
 
 ---
 
-<a id="vpn"></a>\n## VPN Log Analysis Quick Reference
+<a id="vpn"></a>
+## VPN Log Analysis Quick Reference
+
+[↑ Back to top](#top)
 
 VPN authentication logs are easier to investigate when the raw events are reconstructed into a simple sequence.
 
@@ -811,7 +859,10 @@ A successful authentication after repeated failures is especially important beca
 VPN routing, split tunneling, NAT, and vendor configuration can affect which address appears in downstream logs, so verify the environment rather than assuming every event will expose the tunnel IP.
 
 
-<a id="siem-collection"></a>\n## SIEM Log Collection, Parsing, and Correlation Quick Reference
+<a id="siem-collection"></a>
+## SIEM Log Collection, Parsing, and Correlation Quick Reference
+
+[↑ Back to top](#top)
 
 ### Collection Methods
 
@@ -887,7 +938,10 @@ An allowlist permits only explicitly approved items. This can provide strong con
 
 
 
-<a id="splunk-ports"></a>\n## Splunk Default Ports Quick Reference
+<a id="splunk-ports"></a>
+## Splunk Default Ports Quick Reference
+
+[↑ Back to top](#top)
 
 | Port | Purpose | Memory Hook |
 | --- | --- | --- |
@@ -949,7 +1003,10 @@ An alert is **not automatically proof of compromise**. It identifies activity th
 
 
 
-<a id="splunk-hands-on"></a>\n## Splunk Hands-On Quick Reference
+<a id="splunk-hands-on"></a>
+## Splunk Hands-On Quick Reference
+
+[↑ Back to top](#top)
 
 ### Data Ingestion
 
@@ -1218,7 +1275,10 @@ A useful correlation model is:
 **Memory reference:** `EDR = endpoint depth | Splunk = centralized correlation`
 
 
-<a id="siem-eps"></a>\n## SIEM EPS Quick Reference
+<a id="siem-eps"></a>
+## SIEM EPS Quick Reference
+
+[↑ Back to top](#top)
 
 **EPS = Events Per Second** — the number of log/events a SIEM receives or processes each second.
 
@@ -1252,9 +1312,15 @@ The goal is to continuously improve this guide based on practical experience rat
 
 ---
 
-<a id="cti"></a>\n## Cyber Threat Intelligence (CTI) Quick Reference — Session Notes
+<a id="cti"></a>
+## Cyber Threat Intelligence (CTI) Quick Reference — Session Notes
 
-<a id="cti-lifecycle"></a>\n### CTI Lifecycle
+[↑ Back to top](#top)
+
+<a id="cti-lifecycle"></a>
+### CTI Lifecycle
+
+[↑ Back to top](#top)
 
 **Lifecycle:** `Planning & Direction → Information Gathering → Processing → Analysis & Production → Dissemination & Feedback`
 
@@ -1266,7 +1332,10 @@ The goal is to continuously improve this guide based on practical experience rat
 
 **Memory reference:** `Need → Collect → Clean → Analyze → Deliver → Improve`
 
-<a id="cti-types"></a>\n### Types of Threat Intelligence
+<a id="cti-types"></a>
+### Types of Threat Intelligence
+
+[↑ Back to top](#top)
 
 | Type | Primary Focus | Quick Memory |
 | --- | --- | --- |
@@ -1277,7 +1346,10 @@ The goal is to continuously improve this guide based on practical experience rat
 
 A Level 1 SOC analyst commonly consumes **Technical CTI**, while threat-hunting work commonly uses **Operational CTI**.
 
-<a id="ioc"></a>\n### IOC — Indicator of Compromise
+<a id="ioc"></a>
+### IOC — Indicator of Compromise
+
+[↑ Back to top](#top)
 
 An **IOC** is data that can help identify malicious activity, a threat actor, malicious infrastructure, or a malicious file.
 
@@ -1291,7 +1363,10 @@ Common examples:
 
 **Analyst rule:** An IOC is an indicator to investigate and correlate. Do not treat a single indicator or feed result as automatic proof of compromise.
 
-<a id="attack-surface"></a>\n### Attack Surface Discovery
+<a id="attack-surface"></a>
+### Attack Surface Discovery
+
+[↑ Back to top](#top)
 
 An attack surface is the collection of externally exposed assets that may need to be identified, verified, inventoried, and monitored.
 
@@ -1311,7 +1386,10 @@ Potential assets include:
 
 > **Discovery does not equal ownership. Treat discovered assets as leads until ownership or relevance is verified.**
 
-<a id="attack-surface-tools"></a>\n### Attack Surface Tool Reference
+<a id="attack-surface-tools"></a>
+### Attack Surface Tool Reference
+
+[↑ Back to top](#top)
 
 | Tool | CTI / Attack-Surface Use |
 | --- | --- |
@@ -1332,7 +1410,10 @@ Potential assets include:
 
 **Web discovery workflow:** `Domains/Subdomains → Probe HTTP/HTTPS → Identify active websites → Detect technologies → Verify → Inventory`
 
-<a id="shodan"></a>\n### Shodan Quick Reference
+<a id="shodan"></a>
+### Shodan Quick Reference
+
+[↑ Back to top](#top)
 
 Shodan is a search engine for internet-exposed systems and services.
 
@@ -1346,7 +1427,10 @@ Shodan can help identify exposed infrastructure, ports, services, and technology
 
 Alternatives covered in training include **BinaryEdge, ZoomEye, and Censys**.
 
-<a id="web-tech"></a>\n### Website Technology and Source Inspection
+<a id="web-tech"></a>
+### Website Technology and Source Inspection
+
+[↑ Back to top](#top)
 
 Website technologies may be identified with tools such as Wappalyzer, WhatRuns, BuiltWith, and WhatCMS.
 
@@ -1360,7 +1444,10 @@ Manual investigation can also inspect:
 
 **Analyst rule:** Technology detection produces evidence and clues. Verify the finding rather than assuming every detected component is current or organization-owned.
 
-<a id="ssl-tls"></a>\n### SSL/TLS Certificate Discovery
+<a id="ssl-tls"></a>
+### SSL/TLS Certificate Discovery
+
+[↑ Back to top](#top)
 
 SSL/TLS certificates are useful attack-surface assets and can also provide clues about related infrastructure.
 
@@ -1372,7 +1459,10 @@ BIN and SWIFT information can be relevant to financial-sector fraud intelligence
 
 **Memory reference:** `BIN/SWIFT → financial-sector asset intelligence → fraud monitoring`
 
-<a id="ti-gathering"></a>\n### Gathering Threat Intelligence
+<a id="ti-gathering"></a>
+### Gathering Threat Intelligence
+
+[↑ Back to top](#top)
 
 Threat intelligence should be gathered from a **wide range of relevant sources**. More sources can improve visibility, but poor-quality sources can also increase false positives.
 
@@ -1392,7 +1482,10 @@ Examples of IOC sources covered in training include AlienVault, MalwareBazaar, A
 
 **Collection principle:** `More sources → broader visibility → filter/verify → reduce false positives`
 
-<a id="code-repo-intel"></a>\n### Code Repository Intelligence
+<a id="code-repo-intel"></a>
+### Code Repository Intelligence
+
+[↑ Back to top](#top)
 
 Public code repositories can accidentally expose:
 
@@ -1406,7 +1499,10 @@ Repositories can also provide information about newly published vulnerabilities 
 
 **Analyst rule:** A search result is a lead. Verify ownership, context, exposure, and relevance before reporting it.
 
-<a id="honeypots"></a>\n### Honeypots
+<a id="honeypots"></a>
+### Honeypots
+
+[↑ Back to top](#top)
 
 A honeypot is a decoy system designed to attract attacker activity so defenders can observe and collect intelligence.
 
@@ -1420,7 +1516,10 @@ Potential evidence includes:
 
 **Memory reference:** `Bait → Observe → Collect → Correlate`
 
-<a id="internal-telemetry"></a>\n### Internal Security Telemetry as CTI
+<a id="internal-telemetry"></a>
+### Internal Security Telemetry as CTI
+
+[↑ Back to top](#top)
 
 Do not overlook the organization's own security telemetry.
 
@@ -1435,7 +1534,10 @@ These sources may reveal attacker IPs, malicious hashes, repeated attack pattern
 
 **Workflow:** `Security telemetry → Extract indicators → Correlate → Verify → Intelligence`
 
-<a id="ti-interpretation"></a>\n### Threat Intelligence Data Interpretation
+<a id="ti-interpretation"></a>
+### Threat Intelligence Data Interpretation
+
+[↑ Back to top](#top)
 
 Raw threat data collected from multiple sources can be large, duplicated, noisy, outdated, or incorrect. It must be processed before it becomes useful intelligence.
 
@@ -1458,7 +1560,10 @@ A useful investigation model from this training is:
 The goal is not to automate analyst judgment. Tools and intelligence feeds reduce the search space and surface evidence; the analyst determines what the evidence means.
 ---
 
-<a id="xti"></a>\n## Extended Threat Intelligence (XTI) — EASM, DRP, and SOC Integration
+<a id="xti"></a>
+## Extended Threat Intelligence (XTI) — EASM, DRP, and SOC Integration
+
+[↑ Back to top](#top)
 
 After collected data is interpreted in relation to the organization's attack surface, the training groups its use into three areas:
 
@@ -1470,7 +1575,10 @@ Together, these form the **XTI** structure used in the training.
 
 **Memory reference:** `EASM = exposed assets | DRP = digital/brand/people risk | CTI = broader threat picture`
 
-<a id="easm"></a>\n### External Attack Surface Management (EASM)
+<a id="easm"></a>
+### External Attack Surface Management (EASM)
+
+[↑ Back to top](#top)
 
 EASM focuses on the organization's outward-facing assets. Unknown, forgotten, newly created, changed, vulnerable, or misconfigured assets need to be identified, verified, inventoried, and continuously monitored.
 
@@ -1494,7 +1602,10 @@ Alerts covered under EASM include:
 
 **Important distinction:** In this training, **DNS Zone Transfer Detected**, **Website Status Code Changed**, **Subdomain Takeover Detected**, and **Vulnerability Detected** are EASM alerts.
 
-<a id="drp"></a>\n### Digital Risk Protection (DRP)
+<a id="drp"></a>
+### Digital Risk Protection (DRP)
+
+[↑ Back to top](#top)
 
 DRP maps collected intelligence to risks involving the organization beyond basic asset exposure. The training covers brand reputation, Deep & Dark Web threats, fraud, supply-chain risk, web-surface threats, senior executives, leaked credentials, and related digital risks.
 
@@ -1514,7 +1625,10 @@ Alerts covered under DRP include:
 
 **Important distinction:** In this training, **Botnet Detected at Black Market** and **Suspicious Content Detected at Deep & Dark Web** are DRP alerts, not EASM alerts.
 
-<a id="phishing-domain"></a>\n### Potential Phishing / Mimicking Domain Response
+<a id="phishing-domain"></a>
+### Potential Phishing / Mimicking Domain Response
+
+[↑ Back to top](#top)
 
 When intelligence identifies a domain similar to the organization's domain:
 
@@ -1522,20 +1636,29 @@ When intelligence identifies a domain similar to the organization's domain:
 
 If the domain is confirmed to mimic the organization's brand or content, the training directs the analyst to contact the domain registrar and hosting ISP/provider to pursue takedown. If the content is not currently suspicious, the similar domain should still be monitored because it may later be used for phishing.
 
-<a id="rogue-mobile"></a>\n### Rogue Mobile Applications
+<a id="rogue-mobile"></a>
+### Rogue Mobile Applications
+
+[↑ Back to top](#top)
 
 A rogue application may imitate a legitimate organization's application while being unauthorized or malicious.
 
 **Analyst workflow:** `Detect similar application → Analyze safely → Verify whether it is malicious/impersonating → Remediate or pursue takedown`
 
-<a id="botnet-black-market"></a>\n### Botnet Detection at Black Markets
+<a id="botnet-black-market"></a>
+### Botnet Detection at Black Markets
+
+[↑ Back to top](#top)
 
 If an organization's domain or IP appears in botnet data from black markets, determine whether the affected system belongs to a customer or employee.
 
 - **Customer system** → reset the user's password.
 - **Employee system** → conduct forensic investigation, isolate the system from the network, reset network credentials, and investigate whether the system is infected.
 
-<a id="deep-dark-web"></a>\n### Deep & Dark Web / IM Monitoring
+<a id="deep-dark-web"></a>
+### Deep & Dark Web / IM Monitoring
+
+[↑ Back to top](#top)
 
 Threat intelligence can monitor mentions of the organization across Deep & Dark Web sources and instant-messaging environments such as Telegram, ICQ, and IRC.
 
@@ -1543,13 +1666,19 @@ A mention is not automatically proof of an attack. Analyze the content and conte
 
 **Workflow:** `Mention detected → Analyze content/context → Correlate → Determine relevance → Act if necessary`
 
-<a id="stolen-card"></a>\n### Stolen Credit Card Intelligence
+<a id="stolen-card"></a>
+### Stolen Credit Card Intelligence
+
+[↑ Back to top](#top)
 
 For financial-sector use cases, threat intelligence can identify stolen card data that matches a bank's cards.
 
 **Workflow:** `Stolen card intelligence → Match to bank/customer → Notify fraud team → Cancel card`
 
-<a id="data-leaks"></a>\n### Data Leaks in Code Repositories and Buckets
+<a id="data-leaks"></a>
+### Data Leaks in Code Repositories and Buckets
+
+[↑ Back to top](#top)
 
 Threat intelligence may detect sensitive organizational data exposed in locations such as GitHub, Bitbucket, Azure Blob, or Amazon S3.
 
@@ -1563,7 +1692,10 @@ Potential findings include:
 
 If the organization controls the repository or bucket, remove the sensitive data quickly. If it is externally controlled, pursue the appropriate takedown/remediation process.
 
-<a id="attack-surface-session"></a>\n### Attack-Surface Discovery — Session Tool Reminders
+<a id="attack-surface-session"></a>
+### Attack-Surface Discovery — Session Tool Reminders
+
+[↑ Back to top](#top)
 
 Subdomain discovery tools covered in the training include:
 
@@ -1578,7 +1710,10 @@ For website technology detection, the training covers tools such as Wappalyzer, 
 
 **Browser DevTools reminder:** Use the **Network** tab to select a request/response and inspect its headers for technology clues.
 
-<a id="c-level-email"></a>\n### C-Level Employee Email Discovery — Training Tool List
+<a id="c-level-email"></a>
+### C-Level Employee Email Discovery — Training Tool List
+
+[↑ Back to top](#top)
 
 The training lists these tools for detecting C-level employee email addresses:
 
@@ -1589,7 +1724,10 @@ The training lists these tools for detecting C-level employee email addresses:
 
 **SecurityTrails is not in this C-level email-tool list.** In this training, SecurityTrails is used for attack-surface/subdomain discovery.
 
-<a id="ti-sources"></a>\n### Threat Intelligence Collection Sources — Session Reminder
+<a id="ti-sources"></a>
+### Threat Intelligence Collection Sources — Session Reminder
+
+[↑ Back to top](#top)
 
 Sources covered in the training include areas such as:
 
@@ -1605,7 +1743,10 @@ Sources covered in the training include areas such as:
 
 **E-commerce website comments were not one of the threat-intelligence collection sources listed in this training.**
 
-<a id="ti-soc-integration"></a>\n### Threat Intelligence + SOC Integration
+<a id="ti-soc-integration"></a>
+### Threat Intelligence + SOC Integration
+
+[↑ Back to top](#top)
 
 Threat intelligence becomes more useful when it is integrated with the security products already operating in the SOC.
 
@@ -1620,7 +1761,10 @@ The training specifically discusses integration with:
 
 For the training quiz distinctions, tools such as **Nmap** and **Nuclei** are not the SOC threat-intelligence integration products being asked for; they serve different security-testing/discovery purposes.
 
-<a id="session-memory"></a>\n### Session Memory Checks
+<a id="session-memory"></a>
+### Session Memory Checks
+
+[↑ Back to top](#top)
 
 - CTI lifecycle has **5 stages** in this training.
 - There are **4 types of threat intelligence**: Technical, Tactical, Operational, Strategic.
