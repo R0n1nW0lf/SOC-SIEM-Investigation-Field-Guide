@@ -18,6 +18,7 @@ Click a keyword below to jump directly to that section.
 | **XTI / EASM / DRP** | [XTI](#xti) · [EASM](#easm) · [DRP](#drp) · [Phishing / Mimicking Domain](#phishing-domain) · [Rogue Mobile Apps](#rogue-mobile) · [Botnet / Black Market](#botnet-black-market) · [Deep & Dark Web](#deep-dark-web) |
 | **DRP / Exposure** | [Stolen Credit Cards](#stolen-card) · [Data Leaks](#data-leaks) · [Attack-Surface Session Tools](#attack-surface-session) · [C-Level Email Discovery](#c-level-email) · [TI Sources](#ti-sources) |
 | **SOC Integration / Review** | [Threat Intelligence + SOC](#ti-soc-integration) · [Session Memory Checks](#session-memory) |
+| **Malware / File / URL Report Analysis** | [Report Tabs](#analysis-report-tabs) · [Detection](#analysis-detection) · [Details & History](#analysis-details) · [Behavior](#analysis-behavior) · [Relations](#analysis-relations) · [Community](#analysis-community) · [URL Links](#analysis-url-links) · [Re-analyse](#analysis-reanalyse) |
 
 ---
 
@@ -1784,4 +1785,175 @@ Threat intelligence should support investigation rather than replace analyst jud
 `Alert / Intelligence → Question it → Gather evidence → Correlate with assets and telemetry → Investigate → Verify → Supported action or conclusion`
 
 > **Intelligence narrows the search. Evidence supports the decision. The analyst verifies before reporting or acting.**
+
+---
+
+<a id="analysis-report-tabs"></a>
+## Malware / File / URL Analysis Report Tabs — SOC Quick Reference
+
+[↑ Back to top](#top)
+
+Analysis platforms organize evidence into different report areas so an analyst can move from basic identification to runtime behavior, relationships, and supporting context. **VirusTotal was the example platform used in this training**, but the investigation concepts below are useful when reviewing malware, files, URLs, sandbox reports, and threat-intelligence results in general.
+
+**Core idea:** A tab organizes evidence. It does not make the analyst's conclusion.
+
+`Detection → Details → Behavior → Relations → Community / Context → Correlate → Verify`
+
+<a id="analysis-detection"></a>
+### Detection — Security Vendor Analysis
+
+[↑ Back to top](#top)
+
+The **Detection** area shows how security vendors classify or detect the submitted file or URL.
+
+Review:
+
+- Security-vendor analysis results
+- Detection count or ratio
+- Detection names, labels, and tags
+- Whether multiple vendors describe similar behavior or threat families
+- Whether the detections may reflect potentially unwanted or advertising-related software rather than confirmed malware
+
+Do not decide that a file is malicious or safe from the detection count alone. A legitimate setup file can still trigger some engines, while a low or zero detection count does not automatically prove that a file is safe.
+
+**Analyst reminder:** `Detection count → Read labels/tags → Compare vendors → Correlate with other evidence`
+
+<a id="analysis-details"></a>
+### Details — Static Information, Metadata, Headers, and History
+
+[↑ Back to top](#top)
+
+The **Details** area contains information about the object itself rather than what it did while running.
+
+For files, useful details can include:
+
+- MD5
+- SHA-1
+- SHA-256
+- File type and metadata
+- Portable Executable information when applicable
+- Compilation timestamp when available
+
+For a scanned URL, the **Details** area can also provide information such as **HTTP response headers**.
+
+#### Details > History
+
+The History section can include:
+
+- **First Submission** — when the object was first submitted to the analysis service
+- **Last Submission** — the most recent submission
+- **Last Analysis** — the most recent analysis time
+
+**Important distinction:** **First Submission is not the same as a "first infected date."** A submission timestamp tells when the service first received the object. It does not establish when a victim was first infected.
+
+Static metadata also does **not** automatically identify the real person who created a malicious file. Treat names, timestamps, metadata, and other identifying clues as evidence that still requires verification.
+
+<a id="analysis-behavior"></a>
+### Behavior — What Happened When the File Ran
+
+[↑ Back to top](#top)
+
+The **Behavior** area focuses on runtime activity observed when a file is executed in an analysis environment or sandbox.
+
+This is where an analyst should look for evidence such as:
+
+- Processes created by the sample
+- **Subprocesses / child processes**
+- Process relationships or execution chains
+- Other observed runtime actions
+
+A child process can perform activity that the original file does not perform directly, so do not investigate only the original process name.
+
+**Investigation pattern:** `Sample executes → Parent process → Child/subprocesses → Observed behavior → Correlate`
+
+This matches the broader dynamic-analysis lesson: follow the process tree and correlate behavior with file, Registry, network, endpoint, and sandbox evidence when those sources are available.
+
+<a id="analysis-relations"></a>
+### Relations / Relationships — Connected Evidence
+
+[↑ Back to top](#top)
+
+The **Relations** area shows objects associated with the file, URL, IP address, or other indicator being investigated.
+
+Examples covered in training include:
+
+- Contacted domains
+- Contacted URLs
+- Contacted IP addresses
+- Files communicating with or associated with an IP
+- Other related indicators that can be used for investigation pivots
+
+This allows the analyst to move from one IOC to another:
+
+`File → Contacted IP → Search IP → Related files / URLs / domains → Correlate`
+
+A relationship is a lead, not automatic proof that every related object is malicious. Verify why the objects are connected and whether the relationship is relevant to the incident.
+
+<a id="analysis-community"></a>
+### Community — Analyst Context and Shared Observations
+
+[↑ Back to top](#top)
+
+The **Community** area can provide comments and observations from other researchers or analysts.
+
+Useful context may include:
+
+- How a suspicious file was obtained
+- Analysis considerations
+- Behavior or indicators another analyst noticed
+- Items that may not have been detected by automated engines
+
+Community information can help point the investigation in the right direction, but it should be treated as **supporting context**, not unquestioned proof. Verify important claims against the actual technical evidence.
+
+<a id="analysis-url-links"></a>
+### URL Links — Follow the Outgoing Relationships
+
+[↑ Back to top](#top)
+
+For URL analysis, a **Links** area can show outgoing links discovered from the scanned page.
+
+A URL that appears harmless can still link to another address that deserves investigation. Do not stop only because the original URL has a clean-looking result.
+
+**Workflow:** `Scan URL → Review result → Inspect outgoing links → Investigate suspicious destinations → Correlate`
+
+<a id="analysis-reanalyse"></a>
+### Old Results and Re-analysis
+
+[↑ Back to top](#top)
+
+Analysis services may display an older stored result. Before relying on an old report, check the analysis timestamp.
+
+Content can change after an earlier scan, so an old clean result may not describe what exists now. In VirusTotal, use **Re-analyse** when a current scan is needed.
+
+**Workflow:** `Check report date/time → Old result? → Re-analyse → Compare current evidence → Investigate`
+
+Do not blindly trust a green or red result. Review the evidence behind the result, including vendor labels, metadata, behavior, relationships, and timestamps.
+
+### IOC Search and Investigation Pivots
+
+Hashes, IP addresses, domains, and URLs can be searched to find existing analysis and related evidence.
+
+Examples:
+
+- Search a file hash to review historical analysis
+- Search an IP address to review its reputation and relationships
+- Pivot from a file to contacted infrastructure
+- Pivot from infrastructure back to related files
+
+**SOC mindset:** `IOC → Search → Review evidence → Pivot → Correlate → Verify`
+
+### Quick Memory Reference
+
+| Area | Main Question |
+| --- | --- |
+| **Detection** | What are security vendors saying about it? |
+| **Details** | What is the file/URL and what static metadata is available? |
+| **History** | When was it submitted and last analyzed? |
+| **Behavior** | What happened when the file ran? |
+| **Relations** | What domains, URLs, IPs, files, or indicators are connected to it? |
+| **Community** | What context have other analysts/researchers shared? |
+| **Links** | Where does the scanned URL link to? |
+| **Re-analyse** | Is the report old enough that current analysis is needed? |
+
+> **Evidence-first rule:** A tool result narrows the search. The analyst still gathers, correlates, questions, and verifies the evidence before reporting a conclusion.
 
