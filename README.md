@@ -19,6 +19,7 @@ Click a keyword below to jump directly to that section.
 | **DRP / Exposure** | [Stolen Credit Cards](#stolen-card) · [Data Leaks](#data-leaks) · [Attack-Surface Session Tools](#attack-surface-session) · [C-Level Email Discovery](#c-level-email) · [TI Sources](#ti-sources) |
 | **SOC Integration / Review** | [Threat Intelligence + SOC](#ti-soc-integration) · [Session Memory Checks](#session-memory) |
 | **Malware / File / URL Report Analysis** | [Report Tabs](#analysis-report-tabs) · [Detection](#analysis-detection) · [Details & History](#analysis-details) · [Behavior](#analysis-behavior) · [Relations](#analysis-relations) · [Community](#analysis-community) · [URL Links](#analysis-url-links) · [Re-analyse](#analysis-reanalyse) |
+| **SOC137 / Blocked vs Quarantined** | [Blocked vs Quarantined](#soc137-blocked-quarantine) · [Historical Telemetry](#soc137-historical-telemetry) · [Playbook Result](#soc137-playbook-result) |
 
 ---
 
@@ -1956,4 +1957,65 @@ Examples:
 | **Re-analyse** | Is the report old enough that current analysis is needed? |
 
 > **Evidence-first rule:** A tool result narrows the search. The analyst still gathers, correlates, questions, and verifies the evidence before reporting a conclusion.
+
+---
+
+<a id="soc137-blocked-quarantine"></a>
+## SOC137 — Blocked vs Quarantined and Evidence Correlation
+
+[↑ Back to top](#top)
+
+This investigation reinforced an important SOC lesson: **read a security-control action in the context of the specific detection and the playbook being used.**
+
+The alert reported **Device Action: Blocked**. In this LetsDefend SOC137 scenario, the playbook treated that result as the malicious file being successfully **quarantined / cleaned**. The completed playbook confirmed **Quarantined** as the expected answer.
+
+That does **not** create a universal rule that every product's `Blocked` status always means `Quarantined`. Different security products may use those terms for different actions.
+
+**Practical rule:**
+
+`Read the alert action → Check product / playbook terminology → Correlate endpoint and network evidence → Answer only what the evidence supports`
+
+Also remember:
+
+> **Blocked describes the action taken on that specific detection. It does not prove that the endpoint had no other malicious or suspicious activity.**
+
+<a id="soc137-historical-telemetry"></a>
+### Historical Telemetry — Keep Correlation Separate From Proof
+
+[↑ Back to top](#top)
+
+Historical review of the affected endpoint uncovered suspicious activity including:
+
+- WMI / WMIC-associated PowerShell execution
+- Obfuscated PowerShell using Base64 and DEFLATE decompression
+- `ExecutionPolicy Bypass`
+- Hidden / noninteractive PowerShell execution
+- `IEX` execution behavior
+- Directory and file-access commands such as `cd Nicolas` and `type note.txt`
+- Three outbound HTTP `GET` requests recorded as **Allowed**
+- Different parent-process chains observed in the network telemetry
+
+These findings were important investigation leads, but they were **not automatically attributed to the later malicious-file alert**. Timing, process relationships, hashes, domains, URLs, and other telemetry must provide the bridge before separate events are reported as one attack chain.
+
+A `GET` request by itself is normal web behavior. The investigative value comes from context such as the requesting process, parent process, destination, timing, security action, and surrounding endpoint activity.
+
+**Evidence rule:**
+
+`Temporal correlation ≠ proven causation`
+
+<a id="soc137-playbook-result"></a>
+### SOC137 Playbook Result
+
+[↑ Back to top](#top)
+
+Final evidence-based result for the scenario:
+
+- **Malware analysis:** Malicious
+- **Malicious file handling:** Quarantined / cleaned according to the SOC137 playbook interpretation of the blocked detection
+- **Specific C2 address:** Not Accessed
+- **Final classification:** True Positive
+
+The endpoint contained other suspicious historical telemetry, but because the specific C2 associated with the malicious file was **not accessed**, that historical activity was kept separate rather than being forced into the alert's infection chain.
+
+> **Investigate broadly, conclude narrowly. Preserve suspicious leads, but only connect events when the evidence supports the connection.**
 
