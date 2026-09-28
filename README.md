@@ -10,7 +10,7 @@ Click a keyword below to jump directly to that section.
 
 | Area | Jump to |
 | --- | --- |
-| **Malware Analysis** | [Dynamic Malware](#dynamic-malware) · [Tool Reference](#dynamic-tools) · [Procmon Dropped Files](#procmon-dropped-files) · [Procmon Process Tree](#procmon-process-tree) · [Wireshark Network](#wireshark-network) · [Wireshark Filters](#wireshark-filters) · [Large Logs](#large-logs) · [TCP Flags](#tcp-flags) · [Regshot](#regshot) · [Registry Hives](#registry-hives) |
+| **Malware Analysis** | [FLARE-VM Lab](#flare-vm-lab) · [Dynamic Malware](#dynamic-malware) · [Tool Reference](#dynamic-tools) · [Procmon Dropped Files](#procmon-dropped-files) · [Procmon Process Tree](#procmon-process-tree) · [Wireshark Network](#wireshark-network) · [Wireshark Filters](#wireshark-filters) · [Large Logs](#large-logs) · [TCP Flags](#tcp-flags) · [Regshot](#regshot) · [Registry Hives](#registry-hives) |
 | **Web / Network Security** | [WAF](#waf) · [HTTP Status Codes](#http-status) · [Web Attack Patterns](#web-attack-patterns) · [Firewall](#firewall) · [IDS / IPS](#ids-ips) · [VPN](#vpn) · [Common Ports](#common-ports) |
 | **SIEM / Splunk** | [SIEM Collection & Correlation](#siem-collection) · [Splunk Ports](#splunk-ports) · [Splunk Hands-On](#splunk-hands-on) · [EPS](#siem-eps) |
 | **CTI Fundamentals** | [CTI](#cti) · [CTI Lifecycle](#cti-lifecycle) · [CTI Types](#cti-types) · [IOC](#ioc) · [Attack Surface](#attack-surface) · [Attack-Surface Tools](#attack-surface-tools) · [Shodan](#shodan) |
@@ -165,6 +165,58 @@ Sandboxing, packet analysis, and static malware analysis are useful when existin
 # Field Guide — Part 2
 
 > **Continuation Notice:** This section is Part 2 of the SOC/SIEM Investigation Field Guide and continues the material contained in `SOC_SIEM_Investigation_Field_Guide.docx`. It adds new hands-on investigation techniques, lessons learned, and reference material from authorized cybersecurity labs and training.
+
+<a id="flare-vm-lab"></a>
+## FLARE-VM Malware Analysis Lab — Setup & Safety
+
+[↑ Back to top](#top)
+
+**FLARE-VM** provides a preconfigured Windows malware-analysis workstation with many common analysis tools, reducing the need to install each utility separately.
+
+**Useful tools in the lab:**
+
+| Tool | Primary Use |
+| --- | --- |
+| FakeNet-NG | Simulate/intercept network services and observe malware network behavior |
+| Wireshark | Packet capture and network analysis |
+| Regshot | Compare Registry state before and after execution |
+| HashMyFiles | Generate file hashes for IOC identification |
+| Ghidra | Static analysis and reverse engineering |
+| x64dbg | Debugging and runtime inspection |
+| Sysinternals / Procmon | Process, file, Registry, and system activity |
+| capa | Identify executable capabilities |
+| YARA | Pattern/rule-based file identification |
+| CyberChef | Decode and transform data during analysis |
+
+### Lab Network Modes
+
+**Setup / download mode:** Normal NAT may be enabled temporarily for installing/updating tools and obtaining authorized training samples.
+
+**Execution / analysis mode:** Disconnect normal Internet access before executing untrusted malware. Use an isolated lab network and tools such as FakeNet-NG when simulated network interaction is required.
+
+> **Safety rule:** Never execute an untrusted or live malware sample while the analysis VM has ordinary Internet access.
+
+### Clean Baseline Workflow
+
+`Finish FLARE-VM install → Reboot → Verify tools → Remove obsolete lab profile after preserving needed files → Clean up → Shut down VM → Take clean snapshot → Begin analysis/testing`
+
+A useful snapshot name is:
+
+`Win10 FLARE-VM - Clean Tools Ready`
+
+Keep this baseline **before malware execution** so the VM can be reverted to a known-clean analysis state.
+
+### ProcessSnap Integration
+
+ProcessSnap can be added separately to complement the established analysis tools. Its role is to preserve and correlate process-lifecycle evidence, including short-lived processes and timestamps.
+
+**Correlation workflow:**
+
+`ProcessSnap timestamp → Process activity → Procmon evidence → Regshot changes → FakeNet/Wireshark network evidence → Correlate timeline`
+
+ProcessSnap does not replace Procmon, Wireshark, Regshot, or FakeNet-NG. Each tool provides a different evidence source for the analyst to correlate.
+
+---
 
 <a id="dynamic-malware"></a>
 ## Dynamic Malware Analysis
