@@ -11,7 +11,7 @@ Click a keyword below to jump directly to that section.
 | Area | Jump to |
 | --- | --- |
 | **Malware Analysis** | [Dynamic Malware](#dynamic-malware) · [Tool Reference](#dynamic-tools) · [Procmon Dropped Files](#procmon-dropped-files) · [Procmon Process Tree](#procmon-process-tree) · [Wireshark Network](#wireshark-network) · [Wireshark Filters](#wireshark-filters) · [Large Logs](#large-logs) · [TCP Flags](#tcp-flags) · [Regshot](#regshot) · [Registry Hives](#registry-hives) |
-| **Web / Network Security** | [WAF](#waf) · [HTTP Status Codes](#http-status) · [Web Attack Patterns](#web-attack-patterns) · [Firewall](#firewall) · [IDS / IPS](#ids-ips) · [VPN](#vpn) |
+| **Web / Network Security** | [WAF](#waf) · [HTTP Status Codes](#http-status) · [Web Attack Patterns](#web-attack-patterns) · [Firewall](#firewall) · [IDS / IPS](#ids-ips) · [VPN](#vpn) · [Common Ports](#common-ports) |
 | **SIEM / Splunk** | [SIEM Collection & Correlation](#siem-collection) · [Splunk Ports](#splunk-ports) · [Splunk Hands-On](#splunk-hands-on) · [EPS](#siem-eps) |
 | **CTI Fundamentals** | [CTI](#cti) · [CTI Lifecycle](#cti-lifecycle) · [CTI Types](#cti-types) · [IOC](#ioc) · [Attack Surface](#attack-surface) · [Attack-Surface Tools](#attack-surface-tools) · [Shodan](#shodan) |
 | **CTI Discovery / Intelligence** | [Website Technology](#web-tech) · [SSL/TLS](#ssl-tls) · [Gathering Threat Intelligence](#ti-gathering) · [Code Repositories](#code-repo-intel) · [Honeypots](#honeypots) · [Internal Telemetry](#internal-telemetry) · [Data Interpretation](#ti-interpretation) |
@@ -22,6 +22,82 @@ Click a keyword below to jump directly to that section.
 | **SOC137 / Blocked vs Quarantined** | [Blocked vs Quarantined](#soc137-blocked-quarantine) · [Historical Telemetry](#soc137-historical-telemetry) · [Playbook Result](#soc137-playbook-result) |
 
 ---
+
+<a id="common-ports"></a>
+## Common Ports & Protocols — SOC Quick Reference
+
+[↑ Back to top](#top)
+
+Use ports as context, not proof. A service can run on a non-standard port, and the same port can carry unexpected traffic.
+
+**Port ranges**
+- **0–1023:** Well-known / system ports
+- **1024–49151:** Registered ports
+- **49152–65535:** Dynamic / private / ephemeral ports
+
+| Port | Transport | Common service / use |
+| ---: | :---: | --- |
+| 20 | TCP | FTP data |
+| 21 | TCP | FTP control |
+| 22 | TCP | SSH / SFTP / SCP |
+| 23 | TCP | Telnet |
+| 25 | TCP | SMTP |
+| 53 | TCP/UDP | DNS |
+| 67 | UDP | DHCP server |
+| 68 | UDP | DHCP client |
+| 69 | UDP | TFTP |
+| 80 | TCP | HTTP |
+| 88 | TCP/UDP | Kerberos |
+| 110 | TCP | POP3 |
+| 111 | TCP/UDP | RPCbind / Portmapper |
+| 123 | UDP | NTP |
+| 135 | TCP/UDP | Microsoft RPC Endpoint Mapper |
+| 137 | UDP | NetBIOS Name Service |
+| 138 | UDP | NetBIOS Datagram Service |
+| 139 | TCP | NetBIOS Session Service |
+| 143 | TCP | IMAP |
+| 161 | UDP | SNMP queries |
+| 162 | UDP | SNMP traps |
+| 179 | TCP | BGP |
+| 389 | TCP/UDP | LDAP |
+| 443 | TCP/UDP | HTTPS (TCP; HTTP/3 commonly uses UDP/QUIC) |
+| 445 | TCP | SMB / Microsoft-DS |
+| 465 | TCP | SMTP over implicit TLS |
+| 500 | UDP | IKE / IPsec |
+| 514 | UDP | Syslog (traditional) |
+| 515 | TCP | LPD/LPR printing |
+| 587 | TCP | SMTP message submission |
+| 631 | TCP/UDP | IPP printing |
+| 636 | TCP | LDAPS |
+| 853 | TCP/UDP | DNS over TLS (TCP); DNS over QUIC may use UDP |
+| 989 | TCP | FTPS data (implicit TLS) |
+| 990 | TCP | FTPS control (implicit TLS) |
+| 993 | TCP | IMAPS |
+| 995 | TCP | POP3S |
+| 1194 | TCP/UDP | OpenVPN default |
+| 1433 | TCP | Microsoft SQL Server |
+| 1434 | UDP | Microsoft SQL Browser |
+| 1521 | TCP | Oracle Database listener |
+| 1812 | UDP | RADIUS authentication |
+| 1813 | UDP | RADIUS accounting |
+| 2049 | TCP/UDP | NFS |
+| 3306 | TCP | MySQL / MariaDB |
+| 3389 | TCP/UDP | RDP |
+| 5060 | TCP/UDP | SIP |
+| 5061 | TCP | SIP over TLS |
+| 5432 | TCP | PostgreSQL |
+| 5900 | TCP | VNC |
+| 5985 | TCP | WinRM HTTP |
+| 5986 | TCP | WinRM HTTPS |
+| 6379 | TCP | Redis |
+| 8080 | TCP | Common alternate HTTP / proxy |
+| 8443 | TCP | Common alternate HTTPS |
+| 9200 | TCP | Elasticsearch HTTP API default |
+| 9300 | TCP | Elasticsearch node transport default |
+| 27017 | TCP | MongoDB default |
+
+**SOC reminder:** Always correlate the port with the process, source/destination IP, direction, protocol, timestamps, firewall action, authentication logs, and surrounding activity. **Port number alone does not identify malicious activity.**
+
 
 ## About This Project
 
