@@ -23,6 +23,28 @@ Click a keyword below to jump directly to that section.
 
 ---
 
+<a id="windows-event-logon"></a>
+## Windows Logon Analysis — Event Viewer Quick Reference
+
+[↑ Back to top](#top)
+
+**Path:** `Event Viewer → Windows Logs → Security`
+
+Use **Filter Current Log** to narrow the Security log by Event ID.
+
+| Event ID | Meaning | SOC use |
+| ---: | --- | --- |
+| **4624** | Successful logon | Confirm successful authentication and investigate what happened afterward |
+| **4625** | Failed logon | Identify failed authentication attempts and possible brute-force activity |
+
+**RDP clue:** A **4624** event with **Logon Type 10 (RemoteInteractive)** indicates a Remote Desktop / Terminal Services logon.
+
+**Brute-force correlation pattern:** `4625 → 4625 → 4625 → 4624`
+
+Correlate **username + source IP + destination host + timestamps + logon type**. Multiple failures followed by a successful logon can indicate a successful brute-force attack. Continue investigating post-login activity before determining scope or containment.
+
+---
+
 <a id="common-ports"></a>
 ## Common Ports & Protocols — SOC Quick Reference
 
