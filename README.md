@@ -173,6 +173,28 @@ Sandboxing, packet analysis, and static malware analysis are useful when existin
 
 **FLARE-VM** provides a preconfigured Windows malware-analysis workstation with many common analysis tools, reducing the need to install each utility separately.
 
+
+### Get FLARE-VM
+
+**Official project:** [Mandiant FLARE-VM](https://github.com/mandiant/flare-vm)
+
+> **Lab safety:** Install FLARE-VM only inside a dedicated Windows virtual machine. Take a VM snapshot before installation.
+
+For an easy setup, open **PowerShell as Administrator** inside the Windows VM and run:
+
+```powershell
+(New-Object net.webclient).DownloadFile('https://raw.githubusercontent.com/mandiant/flare-vm/main/install.ps1',"$([Environment]::GetFolderPath("Desktop"))\install.ps1")
+
+cd $HOME\Desktop
+Unblock-File .\install.ps1
+Set-ExecutionPolicy Unrestricted -Force
+.\install.ps1
+```
+
+The FLARE-VM installer GUI will open. The **recommended/default package selection** is a good starting point; customize it only when additional tools are needed.
+
+**Installation workflow:** `Snapshot VM → Run PowerShell as Administrator → Download installer → Launch install.ps1 → Review packages → Install → Reboot/finish setup → Verify tools → Take clean tools-ready snapshot`
+
 **Useful tools in the lab:**
 
 | Tool | Primary Use |
