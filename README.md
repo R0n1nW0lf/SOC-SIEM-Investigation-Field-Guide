@@ -12,7 +12,7 @@ Click a keyword below to jump directly to that section.
 
 | Area | Jump to |
 | --- | --- |
-| **Malware Analysis** | [Static Malware](#static-malware) · [Which Tool Do I Use?](#malware-tool-decision) · [FLARE-VM Lab](#flare-vm-lab) · [Dynamic Malware](#dynamic-malware) · [Tool Reference](#dynamic-tools) · [Procmon Dropped Files](#procmon-dropped-files) · [Procmon Process Tree](#procmon-process-tree) · [Wireshark Network](#wireshark-network) · [Wireshark Filters](#wireshark-filters) · [Large Logs](#large-logs) · [TCP Flags](#tcp-flags) · [Regshot](#regshot) · [Registry Hives](#registry-hives) |
+| **Malware Analysis** | [Static Malware](#static-malware) · [Which Tool Do I Use?](#malware-tool-decision) · [FLARE-VM Lab](#flare-vm-lab) · [Persistent Evidence Disk](#persistent-evidence-disk) · [Dynamic Malware](#dynamic-malware) · [Tool Reference](#dynamic-tools) · [Procmon Dropped Files](#procmon-dropped-files) · [Procmon Process Tree](#procmon-process-tree) · [Wireshark Network](#wireshark-network) · [Wireshark Filters](#wireshark-filters) · [Large Logs](#large-logs) · [TCP Flags](#tcp-flags) · [Regshot](#regshot) · [Registry Hives](#registry-hives) |
 | **Web / Network Security** | [WAF](#waf) · [HTTP Status Codes](#http-status) · [Web Attack Patterns](#web-attack-patterns) · [Firewall](#firewall) · [IDS / IPS](#ids-ips) · [VPN](#vpn) · [Common Ports](#common-ports) |
 | **SIEM / Splunk** | [SIEM Collection & Correlation](#siem-collection) · [Splunk Ports](#splunk-ports) · [Splunk Hands-On](#splunk-hands-on) · [EPS](#siem-eps) |
 | **CTI Fundamentals** | [CTI](#cti) · [CTI Lifecycle](#cti-lifecycle) · [CTI Types](#cti-types) · [IOC](#ioc) · [Attack Surface](#attack-surface) · [Attack-Surface Tools](#attack-surface-tools) · [Shodan](#shodan) |
@@ -239,6 +239,81 @@ ProcessSnap can be added separately to complement the established analysis tools
 `ProcessSnap timestamp → Process activity → Procmon evidence → Regshot changes → FakeNet/Wireshark network evidence → Correlate timeline`
 
 ProcessSnap does not replace Procmon, Wireshark, Regshot, or FakeNet-NG. Each tool provides a different evidence source for the analyst to correlate.
+
+<a id="persistent-evidence-disk"></a>
+### Persistent Evidence Disk — Preserve Reports Across Snapshot Restore
+
+[↑ Back to top](#top)
+
+A normal file saved on the malware VM's system disk can disappear when the VM is restored to a clean snapshot. A separate **VirtualBox write-through VDI** can be used as a persistent evidence/report disk so analysis output survives the rollback.
+
+**Lab-tested design:**
+
+`C: = FLARE-VM system disk / restored with snapshot`
+
+`E: = Reports write-through VDI / persists across snapshot restore`
+
+In the tested lab, a 50 GB VDI was created on the host, changed to **write-through** mode, attached to the FLARE VM as a second SATA disk, initialized as GPT, formatted NTFS, and mounted as `E:` with the label `Reports`.
+
+Host-side VirtualBox commands:
+
+```powershell
+& "B:\vbox\VBoxManage.exe" modifymedium disk "B:\VM-Evidence\Reports.vdi" --type writethrough
+& "B:\vbox\VBoxManage.exe" showmediuminfo disk "B:\VM-Evidence\Reports.vdi"
+```
+
+Verify that the output reports:
+
+```text
+Type: writethrough
+```
+
+**Important snapshot setup:** Attach the evidence disk first, then create a new clean VM snapshot with that disk already present. The evidence disk's contents persist independently, while the normal system disk can still be restored to the clean state.
+
+#### Evidence-Disk Workflow
+
+`Analyze offline → Save reports to E: → Shut down VM → Restore clean snapshot → Boot clean → Verify reports → Reconnect Internet if needed → Export/deliver report`
+
+Useful folders can include:
+
+- `E:\Cases`
+- `E:\ProcessSnap`
+- `E:\Procmon`
+- `E:\Regshot`
+- `E:\Wireshark`
+- `E:\Screenshots`
+- `E:\Static-Analysis`
+- `E:\Reports`
+
+Keep the persistent disk focused on **reports and evidence**, not malware samples or dropped executables. Anything stored on the write-through disk survives snapshot restoration.
+
+#### Verify the Reports Survived Correctly
+
+Do not rely only on total drive free-space changes. Windows may legitimately update metadata or system folders such as `$RECYCLE.BIN` and `System Volume Information`.
+
+Compare the actual case/report folder before and after restore using:
+
+- File count
+- File size
+- Timestamps
+- SHA-256 hashes
+
+Example file inventory:
+
+```powershell
+Get-ChildItem E:\Cases\Case-001 -Recurse |
+Select FullName, Length, LastWriteTime
+```
+
+Example SHA-256 verification:
+
+```powershell
+Get-FileHash E:\Cases\Case-001\* -Algorithm SHA256
+```
+
+A simple validation test is to create a text file on `E:`, restore the clean snapshot, and confirm that the file and its contents remain. In the tested lab, the Desktop copy disappeared with the snapshot rollback while the `E:` copy remained, confirming the intended behavior.
+
+> **Evidence rule:** Preserve the dirty-system evidence, restore the analysis environment to a clean state, then verify the persistent report set before reconnecting normal network access or delivering the report.
 
 ---
 
