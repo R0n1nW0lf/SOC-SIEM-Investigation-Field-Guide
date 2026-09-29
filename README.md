@@ -1,8 +1,10 @@
 <a id="top"></a>
 
-# SOC/SIEM Investigation Field Guide
+# Cybersecurity Analysis & Investigation Field Guide
 
-A practical SOC/SIEM investigation field guide developed from hands-on security labs and investigation exercises.
+A practical cybersecurity analysis and investigation field guide developed from hands-on SOC/SIEM work, malware analysis, reverse engineering, threat intelligence, network analysis, and investigation exercises.
+
+**SOC • SIEM • Malware Analysis • Reverse Engineering • Threat Intelligence • Network Analysis**
 
 ## Quick Navigation
 
