@@ -10,7 +10,7 @@ Click a keyword below to jump directly to that section.
 
 | Area | Jump to |
 | --- | --- |
-| **Malware Analysis** | [Static Malware](#static-malware) · [FLARE-VM Lab](#flare-vm-lab) · [Dynamic Malware](#dynamic-malware) · [Tool Reference](#dynamic-tools) · [Procmon Dropped Files](#procmon-dropped-files) · [Procmon Process Tree](#procmon-process-tree) · [Wireshark Network](#wireshark-network) · [Wireshark Filters](#wireshark-filters) · [Large Logs](#large-logs) · [TCP Flags](#tcp-flags) · [Regshot](#regshot) · [Registry Hives](#registry-hives) |
+| **Malware Analysis** | [Static Malware](#static-malware) · [Which Tool Do I Use?](#malware-tool-decision) · [FLARE-VM Lab](#flare-vm-lab) · [Dynamic Malware](#dynamic-malware) · [Tool Reference](#dynamic-tools) · [Procmon Dropped Files](#procmon-dropped-files) · [Procmon Process Tree](#procmon-process-tree) · [Wireshark Network](#wireshark-network) · [Wireshark Filters](#wireshark-filters) · [Large Logs](#large-logs) · [TCP Flags](#tcp-flags) · [Regshot](#regshot) · [Registry Hives](#registry-hives) |
 | **Web / Network Security** | [WAF](#waf) · [HTTP Status Codes](#http-status) · [Web Attack Patterns](#web-attack-patterns) · [Firewall](#firewall) · [IDS / IPS](#ids-ips) · [VPN](#vpn) · [Common Ports](#common-ports) |
 | **SIEM / Splunk** | [SIEM Collection & Correlation](#siem-collection) · [Splunk Ports](#splunk-ports) · [Splunk Hands-On](#splunk-hands-on) · [EPS](#siem-eps) |
 | **CTI Fundamentals** | [CTI](#cti) · [CTI Lifecycle](#cti-lifecycle) · [CTI Types](#cti-types) · [IOC](#ioc) · [Attack Surface](#attack-surface) · [Attack-Surface Tools](#attack-surface-tools) · [Shodan](#shodan) |
@@ -342,6 +342,88 @@ This can expose scheduled-task action details when the GUI truncates the value.
 **Persistence investigation pattern:** `Sample → scheduled task → Action → executable path → correlate file/process/timestamps`
 
 Do not assume every scheduled task is suspicious. Lab infrastructure and legitimate software also create tasks; identify the task associated with the sample using name, path, timing, and surrounding evidence.
+
+---
+
+<a id="malware-tool-decision"></a>
+## Malware Analysis Tool Decision Guide — What Am I Trying to Find?
+
+[↑ Back to top](#top)
+
+Use this section when the question is **"What am I trying to find, and which tool should I open first?"** Start with the smallest tool that can answer the question, then move deeper only when the evidence requires it.
+
+> **Important distinction:** "Signature" can mean different things.  
+> **Raw file signature / magic bytes** → HxD or `file`  
+> **Packer / compiler signature** → Detect It Easy (DiE), Exeinfo PE, or PeStudio  
+> **Digital code-signing signature** → PeStudio or Windows file-signature properties  
+> **PE structure / headers** → PE-bear or CFF Explorer
+
+| Question / Goal | Best First Tool | How to Use It | Next Step If Needed |
+| --- | --- | --- | --- |
+| **What is the real file type?** | **`file`** or **HxD** | Run `file <filename>`, or open the file in HxD and inspect the first bytes at offset `00000000`. | Compare with Magika / DiE if the result is unclear. |
+| **What are the raw magic bytes / file signature?** | **HxD** | Open the file and inspect the first bytes. Example: `4D 5A = MZ` for a Windows PE. | Compare the signature against the claimed extension. |
+| **What is the MD5 / SHA-1 / SHA-256?** | **HashMyFiles** | Drag the file in and record the required hash values. | Use the hash as the sample identifier / IOC and correlate with other evidence. |
+| **What packer, compiler, or protector was used?** | **Detect It Easy (DiE)** | Drag/drop the executable and review detected signatures, architecture, compiler, packer, protector, sections, and entropy. | Cross-check with Exeinfo PE or PeStudio. |
+| **Is the PE packed?** | **DiE / Exeinfo PE / PeStudio** | Review packer/signature indicators such as UPX and unusual section names or entropy. | If appropriate, work on a copy and unpack before deeper reversing. |
+| **What does the PE structure look like?** | **PE-bear** or **CFF Explorer** | Open the executable and inspect DOS/NT headers, sections, data directories, imports, exports, resources, and entry point. | Use Ghidra / IDA for code-level interpretation. |
+| **What DLLs and APIs does the program import?** | **PeStudio / PE-bear** | Review Imports and Libraries. Look for clues involving networking, Registry, process creation, services, crypto, file operations, etc. | Follow interesting imports in Ghidra / IDA and verify dynamically. |
+| **What readable or hidden strings exist?** | **FLOSS** | Run FLOSS against the binary and review static, stack, and decoded-string output. | Pivot on domains, paths, commands, mutexes, Registry keys, and suspicious configuration. |
+| **What capabilities does the executable appear to have?** | **capa** | Run capa against the sample and review matched behavioral capability rules. | Verify important capabilities in code or dynamic telemetry; a capa hit is evidence, not a verdict. |
+| **Is this a .NET executable? Can I recover readable code?** | **dnSpy / ILSpy** | Open the assembly, browse namespaces/classes/methods, and read decompiled C#. | If obfuscated, try de4dot / NETReactorSlayer; if payload appears only in memory, use ExtremeDumper / DotDumper. |
+| **Is this a Go executable?** | **GoReSym** | Run GoReSym against the binary to recover Go symbols, function names, source paths, and runtime metadata. | Feed recovered context into Ghidra / IDA; use GoStringUngarbler if strings are obscured. |
+| **What does the actual native code do?** | **Ghidra / IDA** | Import the sample, allow analysis, then inspect Functions, Strings, Imports, cross-references, graphs, and decompiled pseudocode. | Move to x32dbg/x64dbg when runtime behavior needs to be observed directly. |
+| **What happens instruction-by-instruction while it runs?** | **x32dbg / x64dbg** | Match debugger to architecture, load the sample, set breakpoints, run/step, and inspect registers, stack, memory, and API calls. | Use WinDbg for deeper Windows debugging or TTD when replaying execution is useful. |
+| **What process tree did it create?** | **ProcessSnap** | Capture the baseline, execute the sample, preserve short-lived processes, and review PID/PPID, command lines, timestamps, duration, and parent/child relationships. | Correlate with Procmon and System Informer. |
+| **What files, Registry keys, and process events did it touch?** | **Procmon** | Start capture before execution, stop afterward, then filter by process tree, time, path, operation, or PID. | Use Regshot for before/after Registry comparison and ProcessSnap for lifecycle correlation. |
+| **What changed in the Registry?** | **Regshot** | Take Shot 1 before execution, run the sample, take Shot 2, then Compare. | Use Procmon to identify which process made a specific Registry change. |
+| **What is happening live inside the process tree?** | **System Informer / Process Explorer / Task Explorer** | Inspect processes, parents/children, modules, handles, threads, signatures, sockets, CPU, memory, and properties while the sample is running. | Correlate disappearing processes with ProcessSnap and detailed operations with Procmon. |
+| **Did it inject into another process or unpack only in memory?** | **PE-sieve** | Scan the suspicious PID for injected/replaced PEs, shellcode, hooks, and memory patches. | Use HollowsHunter for broader multi-process scanning; dump interesting artifacts for static analysis. |
+| **Is there suspicious process hollowing/injection across the system?** | **HollowsHunter** | Scan running processes after controlled execution and review/dump flagged implants. | Re-open dumped artifacts in DiE, PeStudio, Ghidra, IDA, or FLOSS. |
+| **What DNS / network traffic did it attempt?** | **FakeNet-NG + Wireshark** | Disconnect normal Internet, start FakeNet, start Wireshark capture, execute the sample, then filter DNS/IP/port/protocol traffic. | Follow streams and correlate timestamps with ProcessSnap / Procmon. |
+| **What HTTP/HTTPS requests did it make?** | **Fiddler** | Capture application-layer web requests and inspect URLs, headers, bodies, and responses in the lab. | Correlate with Wireshark, process telemetry, and sample code. |
+| **I want the command-line version of Wireshark.** | **TShark** | Read or capture PCAP/PCAPNG from terminal and apply display filters for scripted/repeatable analysis. | Export filtered evidence or compare against the GUI capture. |
+| **I want one behavior graph from Procmon + network evidence.** | **ProcDOT** | Capture Procmon activity and relevant packet data, load both into ProcDOT, and generate a process/file/Registry/network relationship graph. | Use the graph as a pivot map, then verify important nodes in the original evidence. |
+| **I have raw shellcode. What can inspect it?** | **scdbg / BlobRunner** | Use scdbg for emulation of supported 32-bit shellcode; use BlobRunner as a small host when controlled debugging of extracted shellcode is required. | Debug with x32dbg/x64dbg or WinDbg as appropriate. |
+| **What is inside a suspicious installer without running it?** | **UniExtract / innoextract / innounp** | Extract the installer into a directory and inspect individual payloads/scripts instead of installing it. | Analyze extracted binaries with the normal static workflow. |
+| **What is inside an Electron / Node application?** | **asar / pkg-unpacker** | Extract packaged application resources or bundled JavaScript. | Beautify/deobfuscate JavaScript and inspect it with MalwareJail only when execution/emulation is needed. |
+| **What is inside suspicious JavaScript?** | **js-beautify / js-deobfuscator** | Beautify first, then deobfuscate if necessary. | Use MalwareJail for controlled JavaScript behavior analysis. |
+| **What is inside a suspicious PDF?** | **pdfid → pdf-parser / PDFStreamDumper** | Use pdfid for quick keyword triage, then inspect/extract interesting objects or streams with deeper PDF tools. | Analyze extracted scripts/files separately. |
+| **What is inside a suspicious OneNote file?** | **onedump / OneNoteAnalyzer** | Enumerate and extract embedded OneNote objects before opening the document interactively. | Analyze extracted payloads with the appropriate file-type workflow. |
+| **How do two related binaries differ?** | **BinDiff** | Analyze both binaries and compare functions/control flow to identify changed code. | Review changed functions in IDA/Ghidra and validate behavior dynamically. |
+| **Is this Visual Basic malware?** | **VB Decompiler** | Use after file identification indicates VB5/VB6-style code; inspect forms, controls, events, strings, and recovered VB-specific structures. | Validate behavior with Procmon/debugging. |
+
+### Fast Analyst Workflow
+
+For an unknown Windows executable:
+
+`Hash → Identify → Triage → Extract clues → Reverse → Execute → Correlate → Report`
+
+A practical tool chain:
+
+`HashMyFiles → file / HxD → DiE → PeStudio → FLOSS → capa → Ghidra/IDA → ProcessSnap → Procmon → Regshot → System Informer → FakeNet/Wireshark → ProcDOT → Report`
+
+Do **not** force every sample through every tool. Use the evidence to decide what question comes next.
+
+### Tool Selection Mindset
+
+- **Need raw bytes?** → HxD
+- **Need file identity?** → `file` / Magika
+- **Need packer/compiler information?** → DiE / Exeinfo PE / PeStudio
+- **Need PE headers/sections?** → PE-bear / CFF Explorer
+- **Need strings?** → FLOSS
+- **Need likely capabilities?** → capa
+- **Need source-like code?** → dnSpy/ILSpy for .NET; Ghidra/IDA for native code
+- **Need runtime instructions?** → x32dbg/x64dbg
+- **Need process lifecycle?** → ProcessSnap
+- **Need detailed OS operations?** → Procmon
+- **Need Registry delta?** → Regshot
+- **Need live process internals?** → System Informer
+- **Need injected/unpacked memory artifacts?** → PE-sieve / HollowsHunter
+- **Need network evidence?** → FakeNet-NG / Wireshark / Fiddler
+- **Need a behavior graph?** → ProcDOT
+- **Need reportable evidence?** → Correlate multiple sources; never rely on one tool alone
+
+> **Analyst rule:** The tool answers a question. It does not make the final conclusion. Correlate the result with independent evidence before reporting.
 
 ---
 
