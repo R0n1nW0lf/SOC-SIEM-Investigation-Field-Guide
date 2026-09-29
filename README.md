@@ -10,7 +10,7 @@ Click a keyword below to jump directly to that section.
 
 | Area | Jump to |
 | --- | --- |
-| **Malware Analysis** | [FLARE-VM Lab](#flare-vm-lab) · [Dynamic Malware](#dynamic-malware) · [Tool Reference](#dynamic-tools) · [Procmon Dropped Files](#procmon-dropped-files) · [Procmon Process Tree](#procmon-process-tree) · [Wireshark Network](#wireshark-network) · [Wireshark Filters](#wireshark-filters) · [Large Logs](#large-logs) · [TCP Flags](#tcp-flags) · [Regshot](#regshot) · [Registry Hives](#registry-hives) |
+| **Malware Analysis** | [Static Malware](#static-malware) · [FLARE-VM Lab](#flare-vm-lab) · [Dynamic Malware](#dynamic-malware) · [Tool Reference](#dynamic-tools) · [Procmon Dropped Files](#procmon-dropped-files) · [Procmon Process Tree](#procmon-process-tree) · [Wireshark Network](#wireshark-network) · [Wireshark Filters](#wireshark-filters) · [Large Logs](#large-logs) · [TCP Flags](#tcp-flags) · [Regshot](#regshot) · [Registry Hives](#registry-hives) |
 | **Web / Network Security** | [WAF](#waf) · [HTTP Status Codes](#http-status) · [Web Attack Patterns](#web-attack-patterns) · [Firewall](#firewall) · [IDS / IPS](#ids-ips) · [VPN](#vpn) · [Common Ports](#common-ports) |
 | **SIEM / Splunk** | [SIEM Collection & Correlation](#siem-collection) · [Splunk Ports](#splunk-ports) · [Splunk Hands-On](#splunk-hands-on) · [EPS](#siem-eps) |
 | **CTI Fundamentals** | [CTI](#cti) · [CTI Lifecycle](#cti-lifecycle) · [CTI Types](#cti-types) · [IOC](#ioc) · [Attack Surface](#attack-surface) · [Attack-Surface Tools](#attack-surface-tools) · [Shodan](#shodan) |
@@ -237,6 +237,111 @@ ProcessSnap can be added separately to complement the established analysis tools
 `ProcessSnap timestamp → Process activity → Procmon evidence → Regshot changes → FakeNet/Wireshark network evidence → Correlate timeline`
 
 ProcessSnap does not replace Procmon, Wireshark, Regshot, or FakeNet-NG. Each tool provides a different evidence source for the analyst to correlate.
+
+---
+
+<a id="static-malware"></a>
+## Static Malware Analysis — File Identity, PE Triage, and Persistence Clues
+
+[↑ Back to top](#top)
+
+Static analysis examines a suspicious file **without executing it**. Do not trust a filename or extension by itself; verify the file's internal structure and correlate results across tools.
+
+### HxD — Verify Magic Bytes / File Signature
+
+Open **HxD**, drag/drop the file into it, and inspect the first bytes at offset `00000000`.
+
+Example observed in training:
+
+`4D 5A → MZ → Windows PE executable → likely .exe`
+
+A file renamed from `.bin` to `.exe` or `.jpg` does not change its underlying contents. Different formats use signatures of different lengths, so treat the **first bytes / magic bytes** as the evidence rather than assuming every signature is exactly four hex characters.
+
+**Workflow:** `Filename claims a type → Inspect magic bytes → Identify actual file structure → Compare extension vs. evidence`
+
+### Quick File-Type Check from Cmder
+
+When the `file` utility is available, use it as an independent check:
+
+```cmd
+file <filename>
+```
+
+In the training sample, the same file continued to identify as a **PE32 Windows executable** after its filename extension was changed. The utility also identified **UPX compression**.
+
+> **Analyst reminder:** An extension is a label. Internal signature and structure provide stronger file-type evidence.
+
+### PeStudio — Broad Static PE Triage
+
+**PeStudio** is useful for quickly extracting more information from a Windows PE file without executing it.
+
+Useful fields/views include:
+
+- MD5, SHA-1, and SHA-256
+- First bytes / file signature
+- File size
+- Entropy
+- Signature / packer identification
+- Compiler/tooling clues
+- Entry point
+- File type
+- CPU architecture
+- Subsystem
+- Sections
+- Libraries and imports
+- Resources
+- Strings
+- Indicators
+
+Training example: PeStudio identified a sample signature as `UPX -> www.upx.sourceforge.net` and displayed its exact byte size.
+
+**Tool roles:** `HxD → raw bytes / magic-byte verification | PeStudio → broad PE static triage | file → quick independent type identification`
+
+UPX packing/compression is an analysis clue, **not proof by itself that a file is malicious**.
+
+### Course / Lab Tool Mismatch Lesson
+
+A training video may demonstrate utilities that are not installed or available in the current lab environment. During this session, commands for `strings`, `xorsearch`, and `upx` were not available from the lab shell.
+
+When a demonstrated command is unavailable:
+
+1. Confirm whether the executable is available with `where <tool>`.
+2. If needed, search for the executable on the authorized lab system.
+3. Do not assume a command-syntax failure when the tool itself is missing.
+4. Use an equivalent trusted tool already provided by the lab when possible.
+5. Do not download random copies of security utilities merely to reproduce an outdated training video.
+
+### Wireshark — DNS Evidence
+
+For network evidence generated in an authorized malware lab, use a Wireshark display filter such as:
+
+```text
+dns
+```
+
+Review DNS **Standard query** packets and the DNS query-name field. Correlate the domain with the sample/timeline rather than treating an unfamiliar domain as malicious by appearance alone.
+
+**Pattern:** `Sample activity → DNS query → queried domain → response / subsequent connection → correlate`
+
+### Scheduled-Task Persistence — Verify the Action
+
+When a sample creates a Windows scheduled task, inspect:
+
+`Task Scheduler → task → Actions → Start a program → Program/script`
+
+Record the **exact full path** from the action. Randomly generated filenames can be case-sensitive in training validators and are easy to misread, so verify character-for-character instead of manually guessing.
+
+Useful command-line corroboration:
+
+```cmd
+schtasks /query /fo LIST /v
+```
+
+This can expose scheduled-task action details when the GUI truncates the value.
+
+**Persistence investigation pattern:** `Sample → scheduled task → Action → executable path → correlate file/process/timestamps`
+
+Do not assume every scheduled task is suspicious. Lab infrastructure and legitimate software also create tasks; identify the task associated with the sample using name, path, timing, and surrounding evidence.
 
 ---
 
